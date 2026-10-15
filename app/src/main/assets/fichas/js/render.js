@@ -550,7 +550,10 @@ const Render = (() => {
           <p class="text-xs text-slate-400 font-mono mt-1">${p.id}</p>
         </div>
 
-        <button id="btn-drive-historia" class="w-full rounded-xl bg-blue-600 text-white py-3 text-sm font-medium mb-4">☁️ Guardar historia clínica completa en Google Drive</button>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <button id="btn-internar-paciente" class="rounded-xl border-2 border-emerald-500 text-emerald-700 dark:text-emerald-400 py-3 text-sm font-medium">🏥 Internar</button>
+          <button id="btn-drive-historia" class="rounded-xl bg-blue-600 text-white py-3 text-sm font-medium">☁️ Historia a Drive</button>
+        </div>
 
         <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">Curva de peso</h3>
         <div class="rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4 mb-4">
@@ -596,6 +599,10 @@ const Render = (() => {
         <div class="grid grid-cols-2 gap-3 mt-4">
           <button id="btn-ir-dosis" class="rounded-xl border-2 border-emerald-500 text-emerald-700 dark:text-emerald-400 py-3 text-sm font-medium">💊 Calcular dosis</button>
           <button id="btn-ir-anestesia" class="rounded-xl border-2 border-emerald-500 text-emerald-700 dark:text-emerald-400 py-3 text-sm font-medium">🩺 Ficha anestésica</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mt-3">
+          <button id="btn-internar-consulta" class="rounded-xl border-2 border-emerald-500 text-emerald-700 dark:text-emerald-400 py-3 text-sm font-medium">🏥 Internar</button>
+          <button id="btn-alta-consulta" class="rounded-xl bg-emerald-600 text-white py-3 text-sm font-medium">📝 Indicaciones al alta</button>
         </div>
         <div class="grid grid-cols-2 gap-3 mt-3">
           <button id="btn-pdf" class="rounded-xl bg-slate-800 dark:bg-slate-700 text-white py-3 text-sm font-medium">📄 Exportar PDF</button>

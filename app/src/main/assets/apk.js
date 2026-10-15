@@ -68,5 +68,16 @@ const Apk = (() => {
   const textoABase64 = (texto) => btoa(unescape(encodeURIComponent(texto)));
   const pdfABase64 = (doc) => doc.output('datauristring').split(',')[1];
 
-  return { disponible, guardarBase64, guardarPdf, guardarTexto, abrirExterno, agendarEnCelular, compartir, textoABase64, pdfABase64 };
+  /** Programa los avisos de internación: [{key, at (ms), title, text, url}]. Reemplaza los anteriores. */
+  function programarAvisos(avisos) {
+    if (disponible() && bridge().scheduleAlarms) return bridge().scheduleAlarms(JSON.stringify(avisos));
+    return '';
+  }
+
+  /** Pide permiso de notificaciones (Android 13+); no hace nada si ya está dado. */
+  function pedirNotificaciones() {
+    if (disponible() && bridge().requestNotifications) bridge().requestNotifications();
+  }
+
+  return { disponible, guardarBase64, guardarPdf, guardarTexto, abrirExterno, agendarEnCelular, compartir, textoABase64, pdfABase64, programarAvisos, pedirNotificaciones };
 })();

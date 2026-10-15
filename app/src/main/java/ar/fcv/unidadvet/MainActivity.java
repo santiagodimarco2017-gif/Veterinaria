@@ -109,11 +109,22 @@ public class MainActivity extends Activity {
         });
         webView.addJavascriptInterface(new Bridge(), "AndroidBridge");
         setContentView(webView);
-        if (savedInstanceState != null) {
+        String desdeAviso = getIntent().getStringExtra("url");
+        if (desdeAviso != null && !desdeAviso.isEmpty()) {
+            webView.loadUrl(BASE_URL + desdeAviso);
+        } else if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
         } else {
             webView.loadUrl(BASE_URL + "index.html");
         }
+    }
+
+    // Al tocar un aviso con la app abierta: ir a la hoja de ese internado.
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String url = intent.getStringExtra("url");
+        if (url != null && !url.isEmpty()) webView.loadUrl(BASE_URL + url);
     }
 
     private WebResourceResponse serveAsset(String path) {
@@ -271,6 +282,23 @@ public class MainActivity extends Activity {
             } catch (Exception e) {
                 return "No se pudo compartir: " + e.getMessage();
             }
+        }
+
+        @JavascriptInterface
+        public String scheduleAlarms(String json) {
+            int n = AlarmReceiver.schedule(MainActivity.this, json);
+            return n + " aviso(s) programado(s)";
+        }
+
+        @JavascriptInterface
+        public void requestNotifications() {
+            runOnUiThread(() -> {
+                AlarmReceiver.createChannel(MainActivity.this);
+                if (Build.VERSION.SDK_INT >= 33
+                        && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 2001);
+                }
+            });
         }
 
         @JavascriptInterface

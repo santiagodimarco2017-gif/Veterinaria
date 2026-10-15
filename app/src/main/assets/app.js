@@ -206,10 +206,21 @@ function registroDosis() {
   if (p.f || p.v) lineas.push(`Indicación: ${p.l}${p.f ? ' · ' + p.f : ''}${p.v ? ' · vía ' + p.v : ''}`);
   const pres = presentacionTexto();
   if (pres) lineas.push(pres);
+  // Datos estructurados para las indicaciones al alta.
+  const valor = (etiqueta) => {
+    const row = [...res.querySelectorAll('.kv')].find((r) => (r.querySelector(':scope > span') || {}).textContent === etiqueta);
+    return row ? row.querySelector(':scope > b').textContent.trim() : '';
+  };
+  const cantidad = valor('Volumen a administrar') || valor('Redondeado a ¼') || valor('Por toma (' + (p.tomas || '') + ' tomas/día)') || valor('Dosis total');
   return {
     tipo: 'Dosis',
     titulo: `${d.free ? 'Cálculo libre' : d.name} — ${res.querySelector('.rhead').textContent.trim()}`,
     lineas: lineas.concat(Registro.lineasDe(res)),
+    datos: {
+      farmaco: d.free ? 'Fármaco' : d.name,
+      dosis: res.querySelector('.rhead').textContent.split('·').pop().trim(),
+      cantidad, frecuencia: p.f || '', via: p.v || '', presentacion: pres,
+    },
   };
 }
 

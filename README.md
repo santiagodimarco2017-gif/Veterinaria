@@ -54,6 +54,26 @@ Unidad) o sin etiqueta (listado inicial).
 Cada push compila el APK con GitHub Actions y lo publica en **Releases** (`DosisVet-FCV.apk`).
 Abrí la página de Releases desde el celular, descargá el archivo e instalalo.
 
+## Internación
+
+Pestaña **🏥 Internados**: pizarra con todos los internados (rojo = tareas
+atrasadas, ámbar = para ahora). En la hoja de cada paciente se cargan
+tratamientos con horario (fármaco, dosis, vía, cada cuántas horas, desde
+cuándo y cuántos días); la app genera las tareas para tildar como hechas u
+omitidas y programa **avisos en el celular** para cada dosis (se reprograman
+al reiniciar). También se registran controles (T°, FC, FR, mucosas, dolor,
+alimentación, orina, heces). Al dar el alta, el resumen y la hoja en PDF
+quedan en la historia clínica.
+
+## Indicaciones al alta
+
+Desde la consulta (o al dar el alta de una internación): lista de
+medicación para la casa precargada con las dosis calculadas, las
+prescripciones y los tratamientos de internación, en lenguaje para el tutor
+(cuánto dar, vía, cada cuánto, cuántos días). Incluye cuidados, próximo
+control y pautas de alarma. Se entrega en PDF o por WhatsApp y queda en la
+historia clínica.
+
 ## Registro en la historia clínica y Google Drive
 
 - En Dosis, Infusión, Cálculos y Anestesia, el botón **📋 Guardar en historia

@@ -135,12 +135,20 @@
 
   // ------------------------------------------------------------- router
 
+  // Herramientas de pantalla para módulos externos (internación).
+  function ayudas() {
+    return { root: appEl, renderInto, showToast };
+  }
+
   const routes = {
     '': screenPacientes,
     pacientes: screenPacientes,
     paciente: screenPacienteDetalle,
     consulta: screenConsulta,
     config: screenConfig,
+    internados: () => Internacion.screenLista(ayudas()),
+    internacion: (id) => Internacion.screenDetalle(id, ayudas()),
+    alta: (id) => Alta.screen(id, ayudas()),
   };
 
   function parseHash() {
@@ -219,6 +227,7 @@
 
     document.getElementById('btn-nueva-consulta').addEventListener('click', crearConsulta);
     appEl.addEventListener('click', async (e) => {
+      if (e.target.closest('#btn-internar-paciente')) { await guardar(p); Internacion.internar(ayudas(), p); return; }
       if (!e.target.closest('#btn-drive-historia')) return;
       try {
         await guardar(p);
@@ -383,6 +392,12 @@
         WhatsApp.abrirResumen(p, f);
         return;
       }
+      if (e.target.closest('#btn-alta-consulta')) { await guardar(f); location.hash = `#/alta/${f.id}`; return; }
+      if (e.target.closest('#btn-internar-consulta')) {
+        await guardar(f);
+        Internacion.internar(ayudas(), p, f.id);
+        return;
+      }
       const quitarReg = e.target.closest('[data-remove-registro]');
       if (quitarReg) {
         if (!confirm('¿Quitar este registro de la consulta?')) return;
@@ -523,6 +538,7 @@
         app: 'DosisVet-FCV', version: 1, exportado: new Date().toISOString(),
         patients: await DB.patients.getAll(),
         fichas: await DB.fichas.getAll(),
+        internaciones: await DB.internaciones.getAll(),
         localStorage: local,
       };
       const nombre = `copia_dosisvet_${Utils.todayISO()}.json`;
@@ -555,6 +571,8 @@
     if (!confirm(`Importar ${copia.patients.length} paciente(s) y ${copia.fichas.length} consulta(s)? Los registros con el mismo N° de HC se reemplazan por los de la copia.`)) return;
     for (const p of copia.patients) await DB.patients.put(p);
     for (const f of copia.fichas) await DB.fichas.put(f);
+    for (const i of (copia.internaciones || [])) await DB.internaciones.put(i);
+    Internacion.sincronizarAvisos();
     Object.entries(copia.localStorage || {}).forEach(([k, v]) => {
       if (CLAVES_LOCALES.includes(k)) { try { localStorage.setItem(k, v); } catch (_e) { /* sin espacio */ } }
     });
@@ -580,7 +598,7 @@
   // de pacientes vuelve a la calculadora.
   window.appBack = () => {
     const { route } = parseHash();
-    if (!route || route === 'pacientes') { location.href = '../index.html'; return true; }
+    if (!route || route === 'pacientes' || route === 'internados') { location.href = '../index.html'; return true; }
     const volver = appEl.querySelector('a[href^="#/"]');
     location.hash = volver ? volver.getAttribute('href') : '#/pacientes';
     return true;
@@ -590,5 +608,6 @@
   window.addEventListener('DOMContentLoaded', async () => {
     await initDarkMode();
     router();
+    Internacion.sincronizarAvisos();
   });
 })();

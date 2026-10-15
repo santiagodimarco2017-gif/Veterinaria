@@ -3,7 +3,7 @@
 
 const DB = (() => {
   const DB_NAME = 'ficha-clinica-fcv';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2; // v2: store de internaciones
   let dbPromise = null;
 
   function open() {
@@ -18,6 +18,10 @@ const DB = (() => {
         if (!db.objectStoreNames.contains('fichas')) {
           const store = db.createObjectStore('fichas', { keyPath: 'id' });
           store.createIndex('patientId', 'patientId', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('internaciones')) {
+          const st = db.createObjectStore('internaciones', { keyPath: 'id' });
+          st.createIndex('patientId', 'patientId', { unique: false });
         }
         if (!db.objectStoreNames.contains('settings')) {
           db.createObjectStore('settings', { keyPath: 'key' });
@@ -86,6 +90,13 @@ const DB = (() => {
       getAll: () => getAll('fichas'),
       getByPatient: (patientId) => getAllByIndex('fichas', 'patientId', patientId),
       remove: (id) => remove('fichas', id),
+    },
+    internaciones: {
+      put: (i) => put('internaciones', i),
+      get: (id) => get('internaciones', id),
+      getAll: () => getAll('internaciones'),
+      getByPatient: (patientId) => getAllByIndex('internaciones', 'patientId', patientId),
+      remove: (id) => remove('internaciones', id),
     },
     settings: {
       put: (key, value) => put('settings', { key, value }),

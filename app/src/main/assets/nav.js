@@ -10,7 +10,8 @@
     { id: 'dosis', label: 'Dosis', icon: '💊', href: base + 'index.html' },
     { id: 'infusion', label: 'Infusión', icon: '💧', href: base + 'infusion.html' },
     { id: 'calculos', label: 'Cálculos', icon: '🧮', href: base + 'calculos.html' },
-    { id: 'fichas', label: 'Fichas', icon: '📋', href: base + 'fichas/index.html' },
+    { id: 'fichas', label: 'Fichas', icon: '📋', href: base + 'fichas/index.html#/pacientes' },
+    { id: 'internados', label: 'Internados', icon: '🏥', href: base + 'fichas/index.html#/internados' },
     { id: 'anestesia', label: 'Anestesia', icon: '🩺', href: base + 'anestesia.html' },
   ];
 
@@ -19,7 +20,7 @@
       background: #ffffff; border-top: 1px solid #dde3e1; padding-bottom: env(safe-area-inset-bottom);
       box-shadow: 0 -2px 10px rgba(0,0,0,.06); font-family: system-ui, -apple-system, Roboto, sans-serif; }
     .appnav a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;
-      padding: 7px 0 8px; text-decoration: none; color: #5f6b67; font-size: 11.5px; font-weight: 600; }
+      padding: 7px 0 8px; text-decoration: none; color: #5f6b67; font-size: 10.5px; font-weight: 600; }
     .appnav a span { font-size: 21px; line-height: 1.1; filter: grayscale(.6); opacity: .75; }
     .appnav a.on { color: #0f6e5c; }
     .appnav a.on span { filter: none; opacity: 1; }
@@ -40,10 +41,13 @@
   style.textContent = css;
   document.head.appendChild(style);
 
+  // Dentro de Fichas, la pestaña activa depende de la ruta (#/internados, #/internacion/...).
+  const activa = () => (active === 'fichas' && /^#\/internac|^#\/internados/.test(location.hash) ? 'internados' : active);
   const nav = document.createElement('nav');
   nav.className = 'appnav';
   nav.innerHTML = tabs.map((t) =>
-    `<a href="${t.href}" class="${t.id === active ? 'on' : ''}"><span>${t.icon}</span>${t.label}</a>`).join('');
+    `<a href="${t.href}" data-tab="${t.id}" class="${t.id === activa() ? 'on' : ''}"><span>${t.icon}</span>${t.label}</a>`).join('');
+  window.addEventListener('hashchange', () => nav.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.dataset.tab === activa())));
   const mount = () => document.body.appendChild(nav);
   if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
 })();

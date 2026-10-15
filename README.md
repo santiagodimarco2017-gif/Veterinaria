@@ -1,9 +1,13 @@
 # Dosis Vet · Unidad Veterinaria FCV
 
 App Android para la clínica diaria de perros y gatos. Funciona sin internet y
-reúne tres herramientas, con una barra inferior para pasar de una a otra:
+reúne cuatro herramientas, con una barra inferior para pasar de una a otra:
 
 - 💊 **Dosis**: calculadora de dosis (detalle abajo).
+- 💧 **Infusión**: infusiones continuas de uno o varios fármacos (por ejemplo
+  FLK), mezclados en una bolsa/jeringa o cada uno aparte, con bomba o a
+  goteo (macro 20 / micro 60). Indica los ml a cargar de cada frasco, el
+  diluyente, la duración, los ml/kg/h de fluido y las gotas por minuto.
 - 📋 **Fichas**: historia clínica (pacientes, tutores, consultas, examen,
   diagnóstico, tratamiento, recordatorios, PDF y resumen por WhatsApp).
   Basada en la app [Fichas](https://github.com/santiagodimarco2017-gif/Fichas).

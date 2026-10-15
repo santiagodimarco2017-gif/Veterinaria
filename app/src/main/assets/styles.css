@@ -119,3 +119,15 @@ input[type=range] { width: 100%; margin: 12px 0 0; accent-color: var(--accent); 
 .alert.warn { background: var(--warn-bg); color: var(--warn); }
 .alert.bad { background: var(--bad-bg); color: var(--bad); font-weight: 700; }
 
+
+/* Infusión continua */
+select.full, input.full { width: 100%; margin-bottom: 4px; }
+input.full { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 16px; margin-top: 6px; }
+.dhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.rm { border: 0; background: transparent; color: var(--bad); font-weight: 600; font-size: 14px; }
+.addrow { display: flex; gap: 8px; margin: 4px 0 8px; }
+.addbtn { flex: 1; border: 2px dashed var(--accent); background: transparent; color: var(--accent); border-radius: 12px; padding: 11px; font-weight: 600; }
+.lbl .muted { font-weight: 400; }
+.hint.warn { color: var(--warn); }
+.sep { font-weight: 700; margin: 12px 0 2px; padding-top: 8px; border-top: 2px solid var(--line); }
+#rate-chips { padding-top: 8px; }

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6e5c">
+<title>Infusión continua</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">Infusión continua <span>· Unidad Veterinaria FCV</span></div>
+  <div class="patient">
+    <div class="seg" id="species">
+      <button data-sp="p">🐶 Perro</button>
+      <button data-sp="g">🐱 Gato</button>
+    </div>
+    <label class="weight"><input id="weight" inputmode="decimal" autocomplete="off" placeholder="Peso"><span>kg</span></label>
+  </div>
+</header>
+
+<main id="cri">
+  <div class="card">
+    <h4>¿Cómo se administra?</h4>
+    <div class="seg small" id="mode">
+      <button data-m="mix">Todo en una bolsa/jeringa</button>
+      <button data-m="sep">Cada fármaco aparte</button>
+    </div>
+    <div class="hint" id="mode-hint"></div>
+
+    <label class="lbl">Volumen final de la bolsa o jeringa</label>
+    <div class="inrow"><input id="vol" inputmode="decimal" placeholder="Ej: 500"><span class="unit">ml</span></div>
+
+    <label class="lbl">Velocidad de infusión</label>
+    <div class="inrow"><input id="rate" inputmode="decimal" placeholder="Ej: 20"><span class="unit">ml/h</span></div>
+    <div class="chips" id="rate-chips"></div>
+
+    <label class="lbl">Sistema</label>
+    <div class="seg small" id="set">
+      <button data-s="bomba">Bomba</button>
+      <button data-s="20">Macrogoteo 20</button>
+      <button data-s="60">Microgoteo 60</button>
+    </div>
+  </div>
+
+  <div id="drugs"></div>
+  <div class="addrow">
+    <button class="addbtn" id="add-drug">+ Agregar fármaco</button>
+    <button class="addbtn" id="add-flk">+ FLK</button>
+  </div>
+
+  <div id="result"></div>
+  <p class="disclaimer">Herramienta de apoyo al cálculo. Verificá dosis, compatibilidad de la mezcla y estado del paciente antes de administrar.</p>
+</main>
+
+<script src="drugs.js"></script>
+<script src="infusion.js"></script>
+<script src="nav.js" data-active="infusion"></script>
+</body>
+</html>

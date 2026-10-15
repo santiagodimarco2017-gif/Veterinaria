@@ -8,6 +8,7 @@
   const base = script.dataset.base || './';
   const tabs = [
     { id: 'dosis', label: 'Dosis', icon: '💊', href: base + 'index.html' },
+    { id: 'infusion', label: 'Infusión', icon: '💧', href: base + 'infusion.html' },
     { id: 'fichas', label: 'Fichas', icon: '📋', href: base + 'fichas/index.html' },
     { id: 'anestesia', label: 'Anestesia', icon: '🩺', href: base + 'anestesia.html' },
   ];

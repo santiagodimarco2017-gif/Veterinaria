@@ -16,6 +16,9 @@
  *   max  dosis total máxima (en la unidad de cantidad), por toma o por día si hay tomas
  *   tiers  dosis fija según peso: [{hasta: kg, dosis}]
  *   conc   concentración sugerida para precargar: {a, au, ml} o {pct}
+ *
+ * Campos del fármaco: info {tipo, clase (riesgo en gestación, Papich), prec[], pres}
+ * y contra {p|g: texto} para contraindicaciones por especie.
  */
 const GROUPS = [
   { id: 'atb', name: 'Antimicrobianos y antiparasitarios' },
@@ -28,21 +31,107 @@ const GROUPS = [
 
 const DRUGS = [
   // ───────────── 1. Antimicrobianos y antiparasitarios ─────────────
-  { id: 'amoxicilina', name: 'Amoxicilina', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'pg', d: [10, 22], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.', n: 'Infecciones respiratorias, urinarias, tejidos blandos y encefalopatía hepática.' },
+  // Antibióticos: Doti FJ, "Uso práctico de los antibióticos en la clínica de
+  // pequeños animales", Inter-Médica 2009 (prospectos y tablas 4.3, 4.4 y 4.5).
+  // src 'Doti' = libro; src 'PDF' = protocolo de la Unidad; sin src = listado inicial.
+  { id: 'amikacina', name: 'Amikacina', g: 'atb', info: {
+      tipo: 'Aminoglucósido. Bactericida concentración-dependiente: ideal 1 sola aplicación diaria.', clase: 'C',
+      prec: ['Extrema cautela en enfermedad renal; asegurar hidratación.', 'Ototoxicidad irreversible (prudencia en perros de trabajo); gatos muy sensibles a efectos vestibulares.', 'Riesgo en neonatos y geriátricos.', 'No mezclar con betalactámicos en la misma jeringa o bolsa.'],
+      pres: 'Inyectable 50 mg/ml.' }, conc: { a: 50, au: 'mg', ml: 1 }, p: [
+    { l: 'Dosis general', sp: 'p', d: [15, 30], u: 'mg/kg', f: 'c/24 h', v: 'EV, IM, SC', src: 'Doti' },
+    { l: 'Sepsis', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/24 h', v: 'EV', src: 'Doti' },
+    { l: 'Dosis general', sp: 'g', d: [10, 15], u: 'mg/kg', f: 'c/24 h', v: 'EV, IM, SC', src: 'Doti' },
+    { l: 'Inmunodeprimidos', sp: 'pg', d: [15, 15], u: 'mg/kg/día', tomas: 3, f: 'dividido c/8 h', v: 'EV, IM, SC', src: 'Doti' },
+    { l: 'Protocolo Unidad', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/24 h', v: 'EV', src: 'PDF' },
   ]},
-  { id: 'amoxiclav', name: 'Amoxicilina + Ác. clavulánico', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'p', d: [11, 11], u: 'mg/kg', f: 'c/8 h', v: 'v.o., inyectable', n: 'Primera línea en piodermias, infecciones respiratorias, heridas por mordedura y piotórax.' },
-    { l: 'Dosis general', sp: 'g', d: [12.5, 12.5], u: 'mg/kg', f: 'c/8 h', v: 'v.o., inyectable', n: 'Primera línea en piodermias, infecciones respiratorias, heridas por mordedura y piotórax.' },
+  { id: 'gentamicina', name: 'Gentamicina', g: 'atb', info: {
+      tipo: 'Aminoglucósido. Bactericida concentración-dependiente; gramnegativos aerobios, sin acción sobre anaerobios.', clase: 'C',
+      prec: ['Nefrotóxica y ototóxica: contraindicada en insuficiencia renal grave.', 'Efectos vestibulares sobre todo en gatos.', 'No se absorbe por vía oral.', 'Incompatible en la misma solución con ampicilina, clindamicina, metronidazol, penicilina G sódica, anfotericina B.'],
+      pres: 'Gentamicina sulfato inyectable.' }, p: [
+    { l: 'Dosis diaria única', sp: 'pg', d: [6, 8], u: 'mg/kg', f: 'c/24 h (neutropénicos c/8-12 h)', v: 'IM, SC', src: 'Doti' },
+    { l: 'Sepsis', sp: 'pg', d: [6, 6], u: 'mg/kg', f: 'c/24 h', v: 'EV', src: 'Doti' },
+    { l: 'Dosis fraccionada', sp: 'pg', d: [2, 4], u: 'mg/kg', f: 'c/8 h', v: 'EV, IM, SC', src: 'Doti' },
+  ]},
+  { id: 'amoxicilina', name: 'Amoxicilina', g: 'atb', info: {
+      tipo: 'Penicilina. Bactericida tiempo-dependiente. Se puede dar con las comidas.', clase: 'A',
+      prec: ['No combinar con bacteriostáticos.', 'Hipersensibilidad a penicilinas.'] }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [10, 20], u: 'mg/kg', f: 'c/8-12 h', v: 'PO, EV, IM, SC', src: 'Doti' },
+    { l: 'Grampositivos', sp: 'pg', d: [10, 10], u: 'mg/kg', f: 'c/12 h', v: 'PO, IM, SC', src: 'Doti' },
+    { l: 'Gramnegativos', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/8 h PO; c/12 h IM, SC', v: 'PO, IM, SC', src: 'Doti' },
+    { l: 'Infecciones urinarias', sp: 'p', d: [10, 20], u: 'mg/kg', f: 'c/12 h, 5-7 días', v: 'PO', src: 'Doti' },
+    { l: 'Infecciones sistémicas', sp: 'p', d: [22, 50], u: 'mg/kg', f: 'c/8 h, 7 días', v: 'PO', src: 'Doti' },
+    { l: 'Infecciones ortopédicas', sp: 'p', d: [22, 30], u: 'mg/kg', f: 'c/6-8 h, 7-10 días', v: 'EV, IM, SC, PO', src: 'Doti' },
+    { l: 'Enfermedad de Lyme', sp: 'p', d: [22, 22], u: 'mg/kg', f: 'c/12 h, 21-28 días', v: 'PO', src: 'Doti' },
+    { l: 'Urinarias y tejidos blandos', sp: 'g', d: [11, 22], u: 'mg/kg', f: 'c/24 h, 5-7 días', v: 'PO', src: 'Doti', n: 'Alternativa: 50 mg por gato c/24 h.' },
+    { l: 'Sepsis', sp: 'g', d: [10, 20], u: 'mg/kg', f: 'c/12 h', v: 'PO, EV, IM, SC', src: 'Doti' },
+    { l: 'Clostridium perfringens (GI)', sp: 'g', d: [22, 22], u: 'mg/kg', f: 'c/24 h, 5 días', v: 'PO', src: 'Doti' },
+    { l: 'Helicobacter (terapia triple)', sp: 'g', d: [20, 20], u: 'mg/kg', f: 'c/12 h, 14 días', v: 'PO', src: 'Doti', n: 'Junto con metronidazol 10-15 mg/kg c/12 h y claritromicina 7,5 mg/kg c/12 h.' },
+  ]},
+  { id: 'amoxiclav', name: 'Amoxicilina + Ác. clavulánico', g: 'atb', info: {
+      tipo: 'Penicilina + inhibidor de betalactamasas. Bactericida tiempo-dependiente.', clase: 'A',
+      prec: ['Dosis expresada como combinación: sumar amoxicilina + clavulánico de la presentación (ej. comprimido 250 + 62,5 mg = 312,5 mg; suspensión 250 + 62,5 mg en 5 ml = 312,5 mg en 5 ml).'],
+      pres: 'Comprimidos 200/50, 250/50 y 500/100 mg. Suspensiones 125/31,25; 200/28,5; 250/62,5 y 400/57 mg cada 5 ml.' }, p: [
+    { l: 'Urinarias y piel / tejidos blandos', sp: 'p', d: [12.5, 13.75], u: 'mg/kg', f: 'c/12 h, 5-7 días (hasta 30)', v: 'PO', src: 'Doti' },
+    { l: 'Piodermia profunda', sp: 'p', d: [12.5, 25], u: 'mg/kg', f: 'c/12 h, 3-6 semanas', v: 'PO', src: 'Doti' },
+    { l: 'Septicemia', sp: 'p', d: [22, 22], u: 'mg/kg', f: 'c/8-12 h, 7 días', v: 'PO', src: 'Doti' },
+    { l: 'Dosis fija por gato (urinarias, piel)', sp: 'g', d: [62.5, 62.5], u: 'mg/animal', f: 'c/12 h, 10-30 días', v: 'PO', src: 'Doti' },
+    { l: 'Piel y tejidos blandos', sp: 'g', d: [10, 20], u: 'mg/kg', f: 'c/12 h, 5-7 días', v: 'PO', src: 'Doti' },
+    { l: 'Septicemia y neumonía', sp: 'g', d: [10, 20], u: 'mg/kg', f: 'c/8 h, 7-10 días', v: 'PO', src: 'Doti' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [20, 25], u: 'mg/kg', f: 'c/12 h', v: 'oral / s.c.', src: 'PDF' },
   ]},
-  { id: 'ampicilina', name: 'Ampicilina / Ampicilina-Sulbactam', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/6-8 h', v: 'i.v.', n: 'Cobertura parenteral en sepsis, pacientes neutropénicos febriles o neumonía grave.' },
+  { id: 'ampicilina', name: 'Ampicilina / Ampicilina-Sulbactam', g: 'atb', info: {
+      tipo: 'Penicilina. Bactericida tiempo-dependiente. Por vía oral se absorbe peor que la amoxicilina y el alimento reduce su absorción.', clase: 'A',
+      prec: ['La ampicilina sódica aporta mucho sodio: cuidado en renales e hipertensos.', 'Incompatible en la misma solución con aminoglucósidos y lincomicina.'] }, p: [
+    { l: 'Grampositivos (oral)', sp: 'pg', d: [10, 20], u: 'mg/kg', f: 'c/12 h', v: 'PO', src: 'Doti' },
+    { l: 'Grampositivos (parenteral)', sp: 'pg', d: [5, 5], u: 'mg/kg', f: 'c/8 h', v: 'IM, SC, EV', src: 'Doti' },
+    { l: 'Gramnegativos (oral)', sp: 'pg', d: [20, 30], u: 'mg/kg', f: 'c/8 h', v: 'PO', src: 'Doti' },
+    { l: 'Gramnegativos (EV)', sp: 'pg', d: [10, 10], u: 'mg/kg', f: 'c/6 h (IM, SC c/8 h)', v: 'EV, IM, SC', src: 'Doti' },
+    { l: 'Bacteriemia / septicemia', sp: 'pg', d: [20, 40], u: 'mg/kg', f: 'c/6-8 h', v: 'EV', src: 'Doti' },
+    { l: 'Neumonía', sp: 'p', d: [22, 22], u: 'mg/kg', f: 'c/8 h, 7-14 días', v: 'PO, EV, SC', src: 'Doti' },
+    { l: 'Óseas o meningitis', sp: 'p', d: [22, 22], u: 'mg/kg', f: 'c/6-8 h', v: 'EV, IM, SC', src: 'Doti' },
+    { l: 'Sepsis neonatal', sp: 'p', d: [50, 50], u: 'mg/kg', f: 'c/4-6 h', v: 'EV', src: 'Doti' },
+    { l: 'Infecciones urinarias', sp: 'g', d: [20, 20], u: 'mg/kg', f: 'c/8-12 h, 7-14 días', v: 'PO', src: 'Doti' },
+    { l: 'Tejidos blandos', sp: 'g', d: [20, 40], u: 'mg/kg', f: 'c/8-12 h, 14 días', v: 'PO', src: 'Doti' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [20, 25], u: 'mg/kg', f: 'c/12 h', v: 'EV', src: 'PDF' },
   ]},
-  { id: 'cefalexina', name: 'Cefalexina', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'pg', d: [22, 25], u: 'mg/kg', f: 'c/12 h', v: 'v.o.', n: 'Piodermias, infecciones osteoarticulares y respiratorias leves a moderadas.' },
+  { id: 'penicilinag', name: 'Penicilina G (procaínica, sódica, benzatínica)', g: 'atb', info: {
+      tipo: 'Betalactámico. Bactericida tiempo-dependiente; grampositivos, anaerobios grampositivos y espiroquetas. Mala absorción oral. Procaínica: acción ~12 h; benzatínica: ~72 h.', clase: 'A',
+      prec: ['Hipersensibilidad: más frecuente que con otros antibióticos.', 'Dosis muy elevadas: ataxia en perros.'],
+      pres: 'Procaínica 10 o 20 millones UI por frasco; asociada a benzatínica 2,5 a 20 millones UI.' }, p: [
+    { l: 'Procaínica', sp: 'pg', d: [20000, 24000], u: 'UI/kg', f: 'c/12-24 h (infecciones graves c/12 h)', v: 'IM, SC', src: 'Doti', n: 'Se puede aumentar hasta 80.000 UI/kg/día.' },
+    { l: 'Sódica', sp: 'pg', d: [20000, 40000], u: 'UI/kg', f: 'c/4-6 h', v: 'EV, IM, SC', src: 'Doti' },
+    { l: 'Benzatínica', sp: 'pg', d: [40000, 40000], u: 'UI/kg', f: 'c/72-120 h', v: 'IM', src: 'Doti' },
+    { l: 'Leptospirosis (antes de doxiciclina)', sp: 'p', d: [25000, 40000], u: 'UI/kg', f: 'c/12 h, 14 días', v: 'IM', src: 'Doti', n: 'Luego doxiciclina 5-10 mg/kg c/12 h, 14 días (estado portador renal).' },
+  ]},
+  { id: 'cefalexina', name: 'Cefalexina', g: 'atb', info: {
+      tipo: 'Cefalosporina de 1ª generación. Bactericida tiempo-dependiente. El alimento casi no influye; con comida reduce las molestias digestivas.', clase: 'B',
+      prec: ['Reportada necrólisis epidérmica tóxica en felinos.'] }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [20, 30], u: 'mg/kg', f: 'c/8-12 h', v: 'PO', src: 'Doti' },
+    { l: 'Piodermia', sp: 'p', d: [22, 35], u: 'mg/kg', f: 'c/12 h', v: 'PO', src: 'Doti' },
+    { l: 'Respiratorias', sp: 'p', d: [20, 40], u: 'mg/kg', f: 'c/8 h', v: 'PO', src: 'Doti' },
+    { l: 'Tejidos blandos', sp: 'p', d: [30, 50], u: 'mg/kg', f: 'c/12 h', v: 'PO', src: 'Doti' },
+    { l: 'Sistémicas', sp: 'p', d: [25, 60], u: 'mg/kg', f: 'c/8 h', v: 'PO', src: 'Doti' },
+    { l: 'Óseas', sp: 'p', d: [22, 30], u: 'mg/kg', f: 'c/6-8 h, 28 días', v: 'PO', src: 'Doti' },
+    { l: 'Urinarias', sp: 'p', d: [30, 40], u: 'mg/kg', f: 'c/8 h', v: 'PO', src: 'Doti' },
+    { l: 'Piómetra / metritis', sp: 'p', d: [10, 30], u: 'mg/kg', f: 'c/8-12 h', v: 'PO', src: 'Doti' },
+    { l: 'Dosis con alimento', sp: 'g', d: [22, 22], u: 'mg/kg', f: 'c/8 h', v: 'PO', src: 'Doti' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [20, 25], u: 'mg/kg', f: 'c/12 h', v: 'oral', src: 'PDF' },
+  ]},
+  { id: 'cefadroxil', name: 'Cefadroxilo', g: 'atb', info: {
+      tipo: 'Cefalosporina de 1ª generación. Se absorbe bien aun con alimento (darlo con las comidas).', clase: 'B' }, p: [
+    { l: 'Dosis general', sp: 'p', d: [22, 22], u: 'mg/kg', f: 'c/12 h (máx. 30 días)', v: 'PO', src: 'Doti' },
+    { l: 'Piodermia', sp: 'pg', d: [22, 35], u: 'mg/kg', f: 'c/12 h, 3-30 días', v: 'PO', src: 'Doti' },
+    { l: 'Urinarias', sp: 'p', d: [11, 22], u: 'mg/kg', f: 'c/12 h, 7-30 días', v: 'PO', src: 'Doti' },
+    { l: 'Sistémicas y óseas', sp: 'pg', d: [22, 22], u: 'mg/kg', f: 'c/8-12 h, 30 días', v: 'PO', src: 'Doti' },
+    { l: 'Dosis general', sp: 'g', d: [22, 22], u: 'mg/kg', f: 'c/24 h', v: 'PO', src: 'Doti' },
+    { l: 'Urinarias', sp: 'g', d: [22, 22], u: 'mg/kg', f: 'c/12 h, 21 días', v: 'PO', src: 'Doti' },
+  ]},
+  { id: 'cefalotina', name: 'Cefalotina', g: 'atb', info: {
+      tipo: 'Cefalosporina de 1ª generación, solo parenteral (preferir EV).', clase: 'B',
+      prec: ['Nefrotóxica a dosis excesivas; se potencia con aminoglucósidos.'] }, p: [
+    { l: 'Grampositivos', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/12 h', v: 'IM, SC', src: 'Doti' },
+    { l: 'Gramnegativos', sp: 'pg', d: [40, 40], u: 'mg/kg', f: 'c/8 h', v: 'IM, SC', src: 'Doti' },
+    { l: 'Endovenosa', sp: 'pg', d: [10, 30], u: 'mg/kg', f: 'c/4-8 h (gato c/8 h)', v: 'EV', src: 'Doti' },
   ]},
   { id: 'cefazolina', name: 'Cefazolina', g: 'atb', p: [
     { l: 'Protocolo Unidad', sp: 'pg', d: [20, 25], u: 'mg/kg', f: 'c/8 h', v: 'EV', src: 'PDF' },
@@ -50,37 +139,148 @@ const DRUGS = [
   { id: 'ceftriaxona', name: 'Ceftriaxona', g: 'atb', p: [
     { l: 'Protocolo Unidad', sp: 'pg', d: [20, 25], u: 'mg/kg', f: 'c/12 h', v: 'EV', src: 'PDF' },
   ]},
-  { id: 'doxiciclina', name: 'Doxiciclina', g: 'atb', p: [
-    { l: 'c/12 h', sp: 'pg', d: [5, 5], u: 'mg/kg', f: 'c/12 h', v: 'v.o.', n: 'Administrar siempre seguida de un bolo de agua o comida. Elección para Mycoplasma, Bordetella, Chlamydia y hemoparásitos.' },
-    { l: 'c/24 h', sp: 'pg', d: [10, 10], u: 'mg/kg', f: 'c/24 h', v: 'v.o.', n: 'Administrar siempre seguida de un bolo de agua o comida.' },
+  { id: 'ceftiofur', name: 'Ceftiofur', g: 'atb', info: { tipo: 'Cefalosporina de 3ª generación.' }, p: [
+    { l: 'Infecciones urinarias', sp: 'pg', d: [2.2, 2.2], u: 'mg/kg', f: 'c/24 h, 5-14 días', v: 'SC', src: 'Doti' },
+    { l: 'Sistémicas y tejidos blandos', sp: 'pg', d: [2.2, 2.2], u: 'mg/kg', f: 'c/12 h (o 4,4 mg/kg c/24 h), 5-14 días', v: 'SC', src: 'Doti' },
+    { l: 'Sepsis / bacteriemia', sp: 'pg', d: [4.4, 4.4], u: 'mg/kg', f: 'c/12 h, 2-5 días', v: 'SC', src: 'Doti' },
+    { l: 'Septicemia neonatal', sp: 'p', d: [2.5, 2.5], u: 'mg/kg', f: 'c/12 h, hasta 5 días', v: 'SC', src: 'Doti' },
+  ]},
+  { id: 'imipenem', name: 'Imipenem-Cilastatina', g: 'atb', info: {
+      tipo: 'Carbapenem. El espectro más amplio conocido; reservar para infecciones graves con riesgo de vida (ideal en osteomielitis complicadas).', clase: 'C',
+      prec: ['Contraindicado en alérgicos a penicilinas.', 'Ajustar dosis e intervalos en falla renal.', 'EV rápido: tromboflebitis; descritas convulsiones y temblores.'],
+      pres: 'Polvo 250 mg/250 mg para EV y SC.' }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [5, 10], u: 'mg/kg', f: 'c/8 h', v: 'EV, IM', src: 'Doti' },
+    { l: 'Sepsis / bacteriemia', sp: 'pg', d: [2, 7.5], u: 'mg/kg', f: 'c/8 h, 3-5 días', v: 'EV, IM', src: 'Doti' },
+    { l: 'Microorganismos resistentes', sp: 'pg', d: [3, 10], u: 'mg/kg', f: 'c/6-8 h, 3-5 días', v: 'EV', src: 'Doti' },
+  ]},
+  { id: 'doxiciclina', name: 'Doxiciclina', g: 'atb', info: {
+      tipo: 'Tetraciclina liposoluble. Bacteriostático tiempo-dependiente; elección en rickettsias y clamidias. Puede darse con alimento (reduce vómitos).', clase: 'D',
+      prec: ['Contraindicada en la 2ª mitad de la gestación y en la lactancia.', 'Gatos: estenosis esofágica; dar agua inmediatamente después del comprimido.', 'Antiácidos, calcio, hierro: darla 3 h antes o 2 h después.', 'Evitar en animales jóvenes y con insuficiencia hepática.'] }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [5, 10], u: 'mg/kg', f: 'c/12 h, 7-14 días', v: 'PO', src: 'Doti' },
+    { l: 'Ehrlichiosis canina', sp: 'p', d: [5, 10], u: 'mg/kg', f: 'c/12 h, 7 días', v: 'PO', src: 'Doti' },
+    { l: 'Enfermedad de Lyme', sp: 'p', d: [10, 10], u: 'mg/kg', f: 'c/24 h, 28 días', v: 'PO', src: 'Doti' },
+    { l: 'Leptospirosis (portador renal)', sp: 'p', d: [5, 10], u: 'mg/kg', f: 'c/12 h, 14 días', v: 'PO', src: 'Doti', n: 'Después de 14 días de penicilina G 25.000-40.000 UI/kg c/12 h IM.' },
+    { l: 'Hemobartonelosis felina', sp: 'g', d: [5, 10], u: 'mg/kg', f: 'c/12 h, 7 días', v: 'PO', src: 'Doti' },
+    { l: 'Bartonelosis', sp: 'g', d: [50, 50], u: 'mg/animal', f: 'c/12 h, 28 días', v: 'PO', src: 'Doti' },
+    { l: 'Sistémicas / bacteriemia', sp: 'g', d: [5, 10], u: 'mg/kg', f: 'c/12 h', v: 'PO, EV', src: 'Doti' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [5, 10], u: 'mg/kg', f: 'c/12-24 h', v: '', src: 'PDF' },
   ]},
-  { id: 'enrofloxacino', name: 'Enrofloxacino', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'p', d: [5, 20], u: 'mg/kg', f: 'c/24 h', v: 'v.o., i.v.', n: 'Gramnegativos resistentes. Riesgo de daño cartilaginoso en cachorros en crecimiento.' },
-    { l: 'Dosis general', sp: 'g', d: [5, 5], u: 'mg/kg', f: 'c/24 h', v: 'v.o., i.v.', n: '⚠ No superar 5 mg/kg/día en gatos por riesgo de retinotoxicidad.' },
+  { id: 'tetraciclina', name: 'Tetraciclina', g: 'atb', info: {
+      tipo: 'Tetraciclina. Bacteriostático tiempo-dependiente. Dar lejos de las comidas y de los lácteos.', clase: 'D',
+      prec: ['Contraindicada en gestación; decolora los dientes en cachorros.', 'Precaución en falla renal y hepática.'],
+      pres: 'Comprimidos 100, 250 y 500 mg; suspensión 25 y 100 mg/ml.' }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/8 h', v: 'PO', src: 'Doti' },
+    { l: 'Parenteral', sp: 'pg', d: [7, 7], u: 'mg/kg', f: 'c/12 h', v: 'EV, IM', src: 'Doti' },
+    { l: 'Ehrlichiosis', sp: 'p', d: [22, 22], u: 'mg/kg', f: 'c/8 h, 10-14 días', v: 'PO', src: 'Doti' },
+    { l: 'Brucelosis', sp: 'p', d: [10, 20], u: 'mg/kg', f: 'c/8 h, 28 días', v: 'PO', src: 'Doti' },
+    { l: 'Rickettsiales', sp: 'g', d: [16, 16], u: 'mg/kg', f: 'c/8 h, 21 días', v: 'PO', src: 'Doti' },
+  ]},
+  { id: 'enrofloxacino', name: 'Enrofloxacina', g: 'atb', info: {
+      tipo: 'Fluoroquinolona. Bactericida concentración-dependiente; gramnegativos, grampositivos, Mycoplasma, Ehrlichia. Sin acción sobre anaerobios.',
+      prec: ['Contraindicada en cachorros de 2 a 8 meses y en razas grandes de crecimiento rápido (cartílago).', 'Precaución en epilépticos (estimulación del SNC).', 'Gatos: fluoroquinolonas y retina; no superar 5 mg/kg/día.', 'Antiácidos y sucralfato reducen la absorción. No usar con teofilina.', 'Gestantes: hasta 15 mg/kg sin trastornos en las crías.'],
+      pres: 'Comprimidos; inyectable al 5% (50 mg/ml) y al 10% (100 mg/ml).' }, conc: { a: 50, au: 'mg', ml: 1 }, p: [
+    { l: 'Dosis general', sp: 'p', d: [5, 20], u: 'mg/kg', f: 'c/12-24 h (mín. 3, máx. 28 días)', v: 'PO', src: 'Doti' },
+    { l: 'Oral o IM', sp: 'p', d: [2.5, 10], u: 'mg/kg', f: 'c/12-24 h', v: 'PO, IM', src: 'Doti' },
+    { l: 'Dosis general', sp: 'g', d: [5, 5], u: 'mg/kg', f: 'c/24 h (mín. 3, máx. 28 días)', v: 'PO, IM', src: 'Doti', n: '⚠ No superar 5 mg/kg/día en gatos (riesgo de degeneración retiniana).' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [5, 5], u: 'mg/kg', f: '', v: 'EV / SC', src: 'PDF' },
   ]},
-  { id: 'amikacina', name: 'Amikacina', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'p', d: [15, 30], u: 'mg/kg', f: 'c/24 h', v: 'i.v., i.m., s.c.', n: 'Sepsis y gramnegativos severos. Asegurar hidratación y perfusión renal previa.' },
-    { l: 'Dosis general', sp: 'g', d: [10, 14], u: 'mg/kg', f: 'c/24 h', v: 'i.v., i.m., s.c.', n: 'Sepsis y gramnegativos severos. Asegurar hidratación y perfusión renal previa.' },
-    { l: 'Protocolo Unidad', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/24 h', v: 'EV', src: 'PDF' },
+  { id: 'marbofloxacina', name: 'Marbofloxacina', g: 'atb', info: {
+      tipo: 'Fluoroquinolona. Bactericida concentración-dependiente. Dar en ayunas (evitar alimento y cationes).',
+      prec: ['Contraindicada en crecimiento: razas pequeñas y medianas < 8 meses, grandes < 12 meses, gigantes < 18 meses; gatos < 12 meses.', 'Precaución en trastornos del SNC.', 'Gatos: fluoroquinolonas y retina.'] }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [2.75, 5.5], u: 'mg/kg', f: 'c/24 h', v: 'PO', src: 'Doti', n: 'Piel: hasta 3 días después de los signos (máx. 30 días). Urinarias: al menos 10 días.' },
   ]},
-  { id: 'clindamicina', name: 'Clindamicina', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'p', d: [10, 12], u: 'mg/kg', f: 'c/12 h', v: 'v.o., s.c.', n: 'Toxoplasmosis, infecciones anaerobias, osteomielitis y piodermias.' },
-    { l: 'Dosis general', sp: 'g', d: [10, 15], u: 'mg/kg', f: 'c/12 h', v: 'v.o., s.c.', n: 'Toxoplasmosis, infecciones anaerobias, osteomielitis y piodermias.' },
+  { id: 'orbifloxacina', name: 'Orbifloxacina', g: 'atb', info: {
+      tipo: 'Fluoroquinolona. Bactericida concentración-dependiente.',
+      prec: ['Cartílago: usar después de los 8 meses (razas pequeñas y medianas) o 18 meses (grandes y gigantes).', 'Precaución en epilépticos.'],
+      pres: 'Comprimidos 5,7; 22,7 y 68 mg.' }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [2.5, 7.5], u: 'mg/kg', f: 'c/24 h (hasta 3 días tras los signos, máx. 30)', v: 'PO', src: 'Doti' },
+  ]},
+  { id: 'difloxacina', name: 'Difloxacina', g: 'atb', contra: { g: 'No indicada en gatos (náuseas y vómitos).' }, info: {
+      tipo: 'Fluoroquinolona. Excreción principalmente por heces: útil en falla renal.',
+      prec: ['Cartílago: después de los 8 meses (pequeñas/medianas) o 18 meses (grandes/gigantes).', 'Precaución en epilépticos.'],
+      pres: 'Comprimidos 11,4; 45,4 y 136 mg.' }, p: [
+    { l: 'Dosis general', sp: 'p', d: [5, 10], u: 'mg/kg', f: 'c/24 h (hasta 3 días tras los signos, máx. 30)', v: 'PO', src: 'Doti' },
+  ]},
+  { id: 'clindamicina', name: 'Clindamicina', g: 'atb', info: {
+      tipo: 'Lincosamida. Bacteriostático; anaerobios, grampositivos, Toxoplasma, Neospora.', clase: 'A',
+      prec: ['Precaución en falla hepática.', 'Puede causar gastroenteritis.'] }, p: [
+    { l: 'Heridas, abscesos, dentales', sp: 'pg', d: [5, 11], u: 'mg/kg', f: 'c/12 h, 7-28 días', v: 'PO, IM, SC', src: 'Doti' },
+    { l: 'Piodermia estafilocócica', sp: 'p', d: [11, 11], u: 'mg/kg', f: 'c/24 h, 7-28 días', v: 'PO', src: 'Doti' },
+    { l: 'Osteomielitis', sp: 'p', d: [11, 11], u: 'mg/kg', f: 'c/12 h, 28 días', v: 'PO', src: 'Doti' },
+    { l: 'Sepsis', sp: 'pg', d: [11, 11], u: 'mg/kg', f: 'c/12 h', v: 'EV', src: 'Doti' },
+    { l: 'Toxoplasmosis', sp: 'p', d: [12.5, 12.5], u: 'mg/kg', f: 'c/12 h, 28 días', v: 'PO', src: 'Doti' },
+    { l: 'Toxoplasmosis sistémica', sp: 'g', d: [12.5, 25], u: 'mg/kg', f: 'c/12 h, 14-28 días', v: 'PO, SC', src: 'Doti' },
+    { l: 'Neosporosis', sp: 'p', d: [10, 10], u: 'mg/kg', f: 'c/12 h, 30 días', v: 'PO', src: 'Doti', n: 'Asociada a TMS 15 mg/kg c/12 h, 28 días.' },
+    { l: 'Hepatozoon canis', sp: 'p', d: [10, 10], u: 'mg/kg', f: 'c/8 h, 15-30 días', v: 'PO', src: 'Doti' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [5.5, 11], u: 'mg/kg', f: 'c/12 h', v: 'EV / oral', src: 'PDF' },
   ]},
-  { id: 'azitromicina', name: 'Azitromicina', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'pg', d: [5, 10], u: 'mg/kg', f: 'c/12 h el día 1, luego c/3 días', v: 'v.o.', n: 'Alternativa en infecciones respiratorias para animales difíciles de medicar o toxoplasmosis.' },
+  { id: 'lincomicina', name: 'Lincomicina', g: 'atb', info: {
+      tipo: 'Lincosamida. Bacteriostático; piel, dentales, periodontales y osteomielitis. El alimento reduce su absorción.', clase: 'A',
+      prec: ['Vómitos, heces blandas y diarrea sanguinolenta en algunos perros.', 'Precaución en falla renal.'],
+      pres: 'Comprimidos 100, 200, 500 mg; solución oral 50 mg/ml; inyectable 100 mg/ml.' }, p: [
+    { l: 'Dosis oral', sp: 'pg', d: [22, 33], u: 'mg/kg', f: 'c/12 h', v: 'PO', src: 'Doti' },
+    { l: 'Piodermia', sp: 'pg', d: [20, 20], u: 'mg/kg', f: 'c/12 h', v: 'PO', src: 'Doti' },
+    { l: 'Oral o parenteral', sp: 'pg', d: [10, 20], u: 'mg/kg', f: 'c/8-12 h', v: 'PO, EV, IM', src: 'Doti' },
   ]},
-  { id: 'tms', name: 'Trimetoprima-Sulfamida', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'pg', d: [15, 15], u: 'mg/kg', f: 'c/12 h', v: 'v.o.', n: 'Infecciones respiratorias, urinarias, toxoplasmosis y pacientes neutropénicos afebriles.' },
+  { id: 'eritromicina', name: 'Eritromicina', g: 'atb', info: {
+      tipo: 'Macrólido. Bacteriostático; grampositivos. Alternativa en alérgicos a penicilinas; Staphylococcus intermedius en piel.', clase: 'A',
+      prec: ['Incompatible con teofilina, warfarina, metilprednisolona, digoxina, carbamacepina, ciclosporina.', 'Precaución en falla hepática.'] }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [10, 20], u: 'mg/kg', f: 'c/8-12 h', v: 'PO', src: 'Doti' },
+  ]},
+  { id: 'azitromicina', name: 'Azitromicina', g: 'atb', info: {
+      tipo: 'Macrólido de vida media muy larga (90 h en perros). Bacteriostático. Dar lejos de las comidas.',
+      prec: ['Precaución en hepatopatías.', 'No usar con cisaprida; aumenta niveles de ciclosporina.', 'Antiácidos reducen su absorción.'] }, p: [
+    { l: 'Dosis general', sp: 'pg', d: [5, 10], u: 'mg/kg', f: 'c/24 h, 3-5 días', v: 'PO', src: 'Doti' },
+    { l: 'Esquema de 5 dosis', sp: 'pg', d: [5, 5], u: 'mg/kg', f: 'c/24 h 2 días, luego c/3-5 días (total 5 dosis)', v: 'PO', src: 'Doti' },
+    { l: 'Piodermia', sp: 'p', d: [10, 10], u: 'mg/kg', f: 'c/24 h, 5-10 días', v: 'PO', src: 'Doti' },
+    { l: 'Babesiosis (coadyuvante)', sp: 'p', d: [10, 10], u: 'mg/kg', f: 'c/24 h, 10 días', v: 'PO', src: 'Doti' },
+    { l: 'Infecciones cutáneas', sp: 'pg', d: [7, 15], u: 'mg/kg', f: 'c/12 h, 5-7 días', v: 'PO', src: 'Doti' },
+  ]},
+  { id: 'tms', name: 'Trimetoprima-Sulfa (sulfas potenciadas)', g: 'atb', info: {
+      tipo: 'Sulfadiacina o sulfametoxazol + trimetoprima. Bactericida tiempo-dependiente; aerobios, Nocardia, Toxoplasma, coccidios.', clase: 'B',
+      prec: ['Dosis expresada como combinación: sumar ambos componentes (ej. comprimido 80/400 mg = 480 mg).', 'Perros: queratoconjuntivitis seca (a veces irreversible), hepatitis, anemia hemolítica, poliartritis. Gatos: anorexia, leucopenia, anemia.', 'Evitar o reducir en falla renal, gestantes y reproductores; precaución en falla hepática y neonatos.', 'Interacciones: warfarina, metotrexato, fenilbutazona, tiazidas, salicilatos, fenitoína; antiácidos reducen la absorción.'],
+      pres: 'Comprimidos 5/25, 20/100, 80/400, 160/800 mg (TMP/sulfa); inyectable al 48%.' }, p: [
+    { l: 'Infecciones en general', sp: 'pg', d: [15, 30], u: 'mg/kg', f: 'c/12-24 h', v: 'PO, IM, EV', src: 'Doti' },
+    { l: 'Dosis estándar', sp: 'pg', d: [30, 30], u: 'mg/kg', f: 'c/12 h', v: 'PO, EV', src: 'Doti' },
+    { l: 'Toxoplasmosis', sp: 'p', d: [15, 15], u: 'mg/kg', f: 'c/12 h, 28 días', v: 'PO', src: 'Doti' },
+    { l: 'Neosporosis', sp: 'p', d: [15, 15], u: 'mg/kg', f: 'c/12 h, 4 semanas', v: 'PO', src: 'Doti' },
+    { l: 'Hepatozoonosis', sp: 'p', d: [15, 15], u: 'mg/kg', f: 'c/12 h, 2-4 semanas', v: 'PO', src: 'Doti' },
+    { l: 'Coccidiosis', sp: 'p', d: [30, 30], u: 'mg/kg', f: 'c/24 h, 10 días', v: 'PO', src: 'Doti' },
+    { l: 'Nocardiosis', sp: 'g', d: [60, 60], u: 'mg/kg', f: 'c/12 h', v: 'PO, EV', src: 'Doti', n: 'Doble de la dosis estándar.' },
+  ]},
+  { id: 'metronidazol', name: 'Metronidazol', g: 'atb', info: {
+      tipo: 'Nitroimidazol. Bactericida sobre anaerobios; Giardia, Trichomonas, Entamoeba. Dar con las comidas.', clase: 'C',
+      prec: ['Contraindicado en gestación y lactancia.', 'Perros: trastornos neurológicos, letargia, neutropenia, hepatotoxicidad.', 'Precaución en falla hepática y neonatos.'],
+      pres: 'Comprimidos 250 y 500 mg; inyectable 5 mg/ml (frasco de 100 ml); polvo 500 mg.' }, p: [
+    { l: 'Giardiasis', sp: 'pg', d: [25, 25], u: 'mg/kg', f: 'c/12 h, 8 días', v: 'PO', src: 'Doti' },
+    { l: 'Sepsis por anaerobios', sp: 'pg', d: [15, 15], u: 'mg/kg', f: 'c/12 h', v: 'EV', src: 'Doti' },
+    { l: 'Gastroenteritis (inicio)', sp: 'pg', d: [15, 15], u: 'mg/kg', f: 'c/8 h hasta que cesen los vómitos', v: 'EV', src: 'Doti', n: 'Luego 7,5 mg/kg vía oral, 5-7 días.' },
+    { l: 'Gastroenteritis (continuación)', sp: 'pg', d: [7.5, 7.5], u: 'mg/kg', f: 'c/8 h, 5-7 días', v: 'PO', src: 'Doti' },
+    { l: 'Enfermedad intestinal inflamatoria', sp: 'pg', d: [10, 15], u: 'mg/kg', f: 'c/12 h, luego la mínima eficaz', v: 'PO', src: 'Doti' },
+    { l: 'Protocolo Unidad', sp: 'pg', d: [10, 15], u: 'mg/kg', f: 'c/12 h', v: 'EV / oral', src: 'PDF' },
+  ]},
+  { id: 'cloranfenicol', name: 'Cloranfenicol', g: 'atb', info: {
+      tipo: 'Fenicol. Bacteriostático de amplio espectro; buena penetración en LCR, ojo y próstata.', clase: 'C',
+      prec: ['Contraindicado en insuficiencia hepática; precaución en anémicos (toxicidad hematopoyética).', 'Mucha prudencia en neonatos y especialmente gatitos; no en hembras lactantes los primeros 15 días.', 'Gatos más susceptibles a efectos adversos.', 'No usar con primidona, fenobarbital, pentobarbital ni ciclofosfamida (prolonga la anestesia).'],
+      pres: 'Cápsulas; polvo para solución oral; succinato sódico inyectable.' }, p: [
+    { l: 'Dosis general', sp: 'p', d: [40, 50], u: 'mg/kg', f: 'c/8 h', v: 'EV, IM, SC, PO', src: 'Doti' },
+    { l: 'Rickettsias / tejidos blandos', sp: 'p', d: [25, 50], u: 'mg/kg', f: 'c/8 h, 7 días', v: 'PO', src: 'Doti' },
+    { l: 'Infecciones sistémicas', sp: 'p', d: [50, 50], u: 'mg/kg', f: 'c/6-8 h, 3-5 días', v: 'PO, EV, IM, SC', src: 'Doti' },
+    { l: 'Bacteriemia grave / sepsis', sp: 'p', d: [50, 50], u: 'mg/kg', f: 'c/4-6 h, 3 días', v: 'EV, IM, SC', src: 'Doti' },
+    { l: 'Urinarias / tejidos blandos', sp: 'g', d: [50, 50], u: 'mg/animal', f: 'c/12 h, 14 días', v: 'PO', src: 'Doti' },
+    { l: 'Infecciones sistémicas', sp: 'g', d: [25, 50], u: 'mg/kg', f: 'c/12 h, 14 días', v: 'PO, EV, IM, SC', src: 'Doti' },
+    { l: 'Bacteriemia grave / sepsis', sp: 'g', d: [50, 50], u: 'mg/animal', f: 'c/6-8 h, 5 días', v: 'EV, IM, SC', src: 'Doti' },
+  ]},
+  { id: 'rifampicina', name: 'Rifampicina', g: 'atb', info: {
+      tipo: 'Bactericida; grampositivos (muy eficaz contra Staphylococcus intermedius) y Mycobacterium. Dar lejos de las comidas.', clase: 'C',
+      prec: ['Suma cautela en insuficiencia hepática.', 'Tiñe lágrimas, saliva y orina de naranja (sin consecuencias).', 'No usar con propranolol, glucocorticoides, warfarina, diazepam ni fenobarbital.'],
+      pres: 'Cápsulas 150 y 300 mg; polvo inyectable 600 mg; spray tópico.' }, p: [
+    { l: 'Micobacterias / endocarditis estafilocócica', sp: 'p', d: [10, 20], u: 'mg/kg', f: 'c/8-12 h', v: 'PO', src: 'Doti', n: 'En terapia combinada (con amoxicilina-clavulánico en la endocarditis).' },
+    { l: 'Micosis del SNC', sp: 'g', d: [10, 20], u: 'mg/kg', f: 'c/8 h', v: 'PO', src: 'Doti', n: 'Combinada con anfotericina B y flucitosina.' },
   ]},
   { id: 'tilosina', name: 'Tilosina', g: 'atb', p: [
-    { l: 'Dosis general', sp: 'pg', d: [10, 20], u: 'mg/kg', f: 'c/12-24 h', v: 'v.o.', n: 'Enteropatía que responde a antibióticos (ERA), colitis clostridial y micoplasmas.' },
-  ]},
-  { id: 'metronidazol', name: 'Metronidazol', g: 'atb', p: [
-    { l: 'Protocolo Unidad', sp: 'pg', d: [10, 15], u: 'mg/kg', f: 'c/12 h', v: 'EV / oral', src: 'PDF' },
+    { l: 'Parenteral', sp: 'pg', d: [5, 20], u: 'mg/kg', f: 'c/12 h', v: 'EV, SC', src: 'Doti' },
+    { l: 'ERA, colitis clostridial, micoplasmas', sp: 'pg', d: [10, 20], u: 'mg/kg', f: 'c/12-24 h', v: 'v.o.' },
   ]},
   { id: 'ivermectina', name: 'Ivermectina', g: 'atb', p: [
     { l: 'Prevención de dirofilariosis', sp: 'pg', d: [6, 12], u: 'µg/kg', f: 'mensual', v: 'v.o.', n: '⚠ Evitar en razas susceptibles a toxicidad (MDR1: collie, pastor australiano, etc.).' },

@@ -146,3 +146,10 @@ details.ref { margin-top: 10px; font-size: 13px; color: var(--muted); }
 details.ref summary { color: var(--accent); font-weight: 600; cursor: pointer; }
 details.ref p { margin: 6px 0; }
 #f-modo { margin-top: 8px; }
+.tag.doti { background: #e3ecfb; color: #2a4f9b; }
+@media (prefers-color-scheme: dark) { .tag.doti { background: #1f2c48; color: #9db8f0; } }
+details.drug-info { font-size: 14px; }
+details.drug-info summary { font-weight: 600; color: var(--accent); cursor: pointer; }
+details.drug-info > div, details.drug-info ul { margin-top: 6px; }
+details.drug-info ul { padding-left: 18px; color: var(--warn); }
+details.drug-info li { margin: 3px 0; }

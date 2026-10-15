@@ -165,7 +165,7 @@ function renderDetail() {
   const d = state.drug;
   $('#d-name').textContent = d.name;
   const contra = d.contra && d.contra[state.sp];
-  $('#d-contra').innerHTML = contra ? `<div class="alert bad">⛔ ${esc(contra)}</div>` : '';
+  $('#d-contra').innerHTML = (contra ? `<div class="alert bad">⛔ ${esc(contra)}</div>` : '') + drugInfoHtml(d);
   const ps = presetsFor(d);
   const body = $('#d-body');
   if (!ps.length) { body.hidden = true; return; }
@@ -174,7 +174,7 @@ function renderDetail() {
 
   $('#d-presets').innerHTML = d.free ? '' : ps.map((p, i) => `
     <button class="preset ${i === state.pi ? 'on' : ''}" data-i="${i}">
-      <span class="pl">${esc(p.l)}${p.src === 'PDF' ? ' <span class="tag">PDF</span>' : ''}${p.cri ? ' <span class="tag cri">IC</span>' : ''}</span>
+      <span class="pl">${esc(p.l)}${p.src === 'PDF' ? ' <span class="tag">Unidad</span>' : p.src === 'Doti' ? ' <span class="tag doti">Doti</span>' : ''}${p.cri ? ' <span class="tag cri">IC</span>' : ''}</span>
       <span class="pr">${esc(rangeText(p))}${p.f ? ' · ' + esc(p.f) : ''}</span>
     </button>`).join('');
   $('#d-presets-wrap').hidden = d.free || ps.length < 2;
@@ -187,6 +187,34 @@ function renderDetail() {
   compute();
 }
 
+// Clasificación de riesgo en gestación (Papich, 1989) citada por Doti.
+const CLASE_GESTACION = {
+  A: 'probablemente segura',
+  B: 'sin riesgos demostrados, pruebas insuficientes',
+  C: 'riesgos potenciales: usar solo si el beneficio supera claramente el riesgo',
+  D: 'contraindicada (malformaciones o embriotoxicidad)',
+};
+
+// Interferencia del alimento (Doti, Tabla 4.3), cuando la ficha no lo aclara.
+const ALIMENTO = {
+  lejos: ['azitromicina', 'eritromicina', 'enrofloxacino', 'marbofloxacina', 'orbifloxacina', 'difloxacina', 'lincomicina', 'penicilinag', 'ampicilina', 'rifampicina', 'tms', 'tetraciclina'],
+  con: ['cefadroxil', 'doxiciclina', 'metronidazol', 'ketoconazol'],
+  indif: ['cefalexina'],
+};
+
+function drugInfoHtml(d) {
+  if (!d.info) return '';
+  const i = d.info;
+  const ali = ALIMENTO.lejos.includes(d.id) ? 'Lejos de las comidas.' : ALIMENTO.con.includes(d.id) ? 'Con las comidas.' : ALIMENTO.indif.includes(d.id) ? 'Indiferente al alimento.' : '';
+  const rows = [];
+  if (i.tipo) rows.push(`<div>${esc(i.tipo)}</div>`);
+  if (i.clase) rows.push(`<div><b>Gestación:</b> clase ${i.clase} · ${esc(CLASE_GESTACION[i.clase])}</div>`);
+  if (ali) rows.push(`<div><b>Alimento:</b> ${ali}</div>`);
+  if (i.prec && i.prec.length) rows.push(`<ul>${i.prec.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`);
+  if (i.pres) rows.push(`<div><b>Presentaciones:</b> ${esc(i.pres)}</div>`);
+  return `<details class="card drug-info"><summary>ℹ️ Información y precauciones</summary>${rows.join('')}</details>`;
+}
+
 function renderPresetInfo(p) {
   const bits = [];
   if (!state.drug.free) bits.push(`<div><b>Dosis:</b> ${esc(rangeText(p))}</div>`);
@@ -194,6 +222,7 @@ function renderPresetInfo(p) {
   if (p.v) bits.push(`<div><b>Vía:</b> ${esc(p.v)}</div>`);
   if (p.n) bits.push(`<div class="note">${esc(p.n)}</div>`);
   if (p.src === 'PDF') bits.push('<div class="src">Fuente: vademécum de la Unidad (PDF)</div>');
+  if (p.src === 'Doti') bits.push('<div class="src">Fuente: Doti FJ. Uso práctico de los antibióticos en la clínica de pequeños animales. Inter-Médica, 2009.</div>');
   $('#d-info').innerHTML = bits.join('');
   $('#d-info').hidden = !bits.length;
 }

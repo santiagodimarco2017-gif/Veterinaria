@@ -36,6 +36,13 @@ secciones con la especie, el peso y los datos del paciente ya cargados.
 
 ### Calculadora de dosis
 
+Los antibióticos siguen a Doti FJ, *Uso práctico de los antibióticos en la
+clínica de pequeños animales* (Inter-Médica, 2009): posología por especie e
+indicación de cada prospecto, régimen convencional (Tabla 4.5), interferencia
+del alimento (4.3), precauciones (4.4) y clase de riesgo en gestación.
+Cada indicación muestra su fuente: **Doti**, **Unidad** (vademécum de la
+Unidad) o sin etiqueta (listado inicial).
+
 - Elegís especie y peso, el fármaco y la indicación.
 - Cargás la presentación: líquido (`X mg en Y ml`, `UI/ml` o `%`) o comprimido (`mg por comprimido`).
 - Te devuelve la dosis total, los **ml a administrar** o los **comprimidos** (redondeado a ¼), con advertencias de rango y dosis máximas.

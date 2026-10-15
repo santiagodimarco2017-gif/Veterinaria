@@ -131,3 +131,11 @@ input.full { padding: 10px 12px; border: 1px solid var(--line); border-radius: 1
 .hint.warn { color: var(--warn); }
 .sep { font-weight: 700; margin: 12px 0 2px; padding-top: 8px; border-top: 2px solid var(--line); }
 #rate-chips { padding-top: 8px; }
+
+/* Cálculos clínicos */
+.seg.tabs { margin-bottom: 4px; }
+.seg.tabs button { font-size: 13.5px; padding: 9px 2px; }
+.chips.wrap { flex-wrap: wrap; overflow: visible; padding-top: 0; margin-bottom: 8px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.grid2 .lbl { margin-top: 8px; }
+#n-stage { width: 100%; }

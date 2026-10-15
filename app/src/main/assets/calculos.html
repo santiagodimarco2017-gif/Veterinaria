@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6e5c">
+<title>Cálculos clínicos</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">Cálculos clínicos <span>· Unidad Veterinaria FCV</span></div>
+  <div class="patient">
+    <div class="seg" id="species">
+      <button data-sp="p">🐶 Perro</button>
+      <button data-sp="g">🐱 Gato</button>
+    </div>
+    <label class="weight"><input id="weight" inputmode="decimal" autocomplete="off" placeholder="Peso"><span>kg</span></label>
+  </div>
+</header>
+
+<main>
+  <div class="seg tabs" id="tool">
+    <button data-t="fluidos">💧 Fluidoterapia</button>
+    <button data-t="transfusion">🩸 Transfusión</button>
+    <button data-t="nutricion">🍽 Nutrición</button>
+  </div>
+
+  <!-- ───────────── FLUIDOTERAPIA ───────────── -->
+  <section id="t-fluidos" class="tool">
+    <div class="card">
+      <h4>Déficit (deshidratación)</h4>
+      <div class="chips wrap" id="dh-chips"></div>
+      <div class="inrow"><input id="f-dh" data-k="fDh" inputmode="decimal" placeholder="0"><span class="unit">% de deshidratación</span></div>
+      <div class="hint" id="dh-desc"></div>
+      <label class="lbl">Reponer el déficit en</label>
+      <div class="inrow"><input id="f-h" data-k="fH" inputmode="decimal" placeholder="24"><span class="unit">horas</span></div>
+      <div class="chips" id="h-chips"></div>
+    </div>
+    <div class="card">
+      <h4>Mantenimiento</h4>
+      <div class="seg small" id="f-mant">
+        <button data-v="aaha">Fórmula AAHA</button>
+        <button data-v="kg">ml/kg/día</button>
+      </div>
+      <div id="f-mant-kg-wrap"><div class="inrow"><input id="f-mantkg" data-k="fMantKg" inputmode="decimal" placeholder="50"><span class="unit">ml/kg/día</span></div></div>
+      <div class="hint" id="f-mant-hint"></div>
+    </div>
+    <div class="card">
+      <h4>Pérdidas actuales (vómitos, diarrea, poliuria…)</h4>
+      <div class="inrow"><input id="f-loss" data-k="fLoss" inputmode="decimal" placeholder="0"><span class="unit">ml/día estimados</span></div>
+    </div>
+    <div id="r-fluidos"></div>
+  </section>
+
+  <!-- ───────────── TRANSFUSIÓN ───────────── -->
+  <section id="t-transfusion" class="tool">
+    <div class="card">
+      <h4>Hemoderivado</h4>
+      <div class="seg small" id="t-prod">
+        <button data-v="se">Sangre entera</button>
+        <button data-v="grc">Glóbulos rojos concentrados</button>
+      </div>
+      <label class="lbl">Hematocrito del receptor (actual)</label>
+      <div class="inrow"><input id="t-hr" data-k="tHr" inputmode="decimal" placeholder="Ej: 12"><span class="unit">%</span></div>
+      <label class="lbl">Hematocrito deseado</label>
+      <div class="inrow"><input id="t-hd" data-k="tHd" inputmode="decimal" placeholder="Ej: 20"><span class="unit">%</span></div>
+      <label class="lbl">Hematocrito del donante / de la unidad</label>
+      <div class="inrow"><input id="t-hdon" data-k="tHdon" inputmode="decimal" placeholder="Ej: 45"><span class="unit">%</span></div>
+      <label class="lbl">Volemia</label>
+      <div class="inrow"><input id="t-bv" data-k="tBv" inputmode="decimal"><span class="unit">ml/kg</span></div>
+      <div class="hint">Perro 90 ml/kg · gato 60 ml/kg.</div>
+    </div>
+    <div class="card">
+      <h4>Velocidad</h4>
+      <label class="lbl">Tiempo máximo para completar</label>
+      <div class="inrow"><input id="t-tmax" data-k="tTmax" inputmode="decimal" placeholder="4"><span class="unit">horas</span></div>
+      <label class="lbl">Riesgo de sobrecarga de volumen</label>
+      <div class="seg small" id="t-risk">
+        <button data-v="no">Normovolémico</button>
+        <button data-v="si">Cardiópata / riesgo</button>
+      </div>
+      <label class="lbl">Equipo de transfusión</label>
+      <div class="seg small" id="t-set">
+        <button data-v="bomba">Bomba</button>
+        <button data-v="10">10 gt/ml</button>
+        <button data-v="15">15 gt/ml</button>
+        <button data-v="20">20 gt/ml</button>
+      </div>
+    </div>
+    <div id="r-transfusion"></div>
+  </section>
+
+  <!-- ───────────── NUTRICIÓN ───────────── -->
+  <section id="t-nutricion" class="tool">
+    <div class="card">
+      <h4>Requerimiento energético</h4>
+      <label class="lbl">Peso para el cálculo</label>
+      <div class="inrow"><input id="n-w" data-k="nW" inputmode="decimal" placeholder="Peso actual"><span class="unit">kg</span></div>
+      <div class="hint">Vacío = peso actual. Para bajar o subir de peso, poné el peso ideal.</div>
+      <label class="lbl">Condición / etapa</label>
+      <select id="n-stage" class="full"></select>
+      <label class="lbl">Factor (MER = RER × factor)</label>
+      <div class="inrow"><input id="n-f" data-k="nF" inputmode="decimal"><span class="unit">× RER</span></div>
+    </div>
+    <div class="card">
+      <h4>Alimento (análisis garantizado del envase)</h4>
+      <div class="grid2">
+        <label><span class="lbl">Proteína</span><div class="inrow"><input data-k="nProt" inputmode="decimal" placeholder="25"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Grasa</span><div class="inrow"><input data-k="nFat" inputmode="decimal" placeholder="12"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Fibra</span><div class="inrow"><input data-k="nFib" inputmode="decimal" placeholder="3"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Humedad</span><div class="inrow"><input data-k="nHum" inputmode="decimal" placeholder="10"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Cenizas</span><div class="inrow"><input data-k="nAsh" inputmode="decimal" placeholder="8"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Comidas por día</span><div class="inrow"><input data-k="nMeals" inputmode="decimal" placeholder="2"></div></label>
+      </div>
+      <div class="hint">Si el envase no declara cenizas se estima 8% (seco) o 2,5% (húmedo, humedad &gt; 50%).</div>
+      <label class="lbl">Energía declarada en el envase (opcional)</label>
+      <div class="inrow"><input data-k="nKcalKg" inputmode="decimal" placeholder="Ej: 3600"><span class="unit">kcal/kg</span></div>
+    </div>
+    <div id="r-nutricion"></div>
+  </section>
+
+  <p class="disclaimer">Herramienta de apoyo al cálculo. Ajustá siempre según la evolución clínica del paciente.</p>
+</main>
+
+<script src="calculos.js"></script>
+<script src="nav.js" data-active="calculos"></script>
+</body>
+</html>

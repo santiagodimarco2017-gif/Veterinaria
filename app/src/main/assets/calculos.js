@@ -474,3 +474,17 @@ document.body.addEventListener('click', (e) => {
 window.appBack = () => { location.href = 'index.html'; return true; };
 
 render();
+
+// Botones para guardar cada cálculo en la historia clínica.
+[['#r-fluidos', 'Fluidoterapia'], ['#r-transfusion', 'Transfusión'], ['#r-nutricion', 'Nutrición']].forEach(([sel, tipo]) => {
+  Registro.boton($(sel), () => {
+    const res = $(sel + ' .result');
+    if (!res || res.classList.contains('muted')) return null;
+    const head = res.querySelector('.rhead');
+    const extra = [];
+    if (tipo === 'Fluidoterapia') extra.push(`Modo: ${{ int: 'internación IV', anes: 'anestesia', sc: 'subcutánea' }[state.fModo]}${state.fModo === 'int' && state.fDh ? ` · deshidratación ${state.fDh}% en ${state.fH || 24} h` : ''}`);
+    if (tipo === 'Transfusión') extra.push(`Hto actual ${state.tHr}% → deseado ${state.tHd}% · donante ${state.tHdon}%`);
+    if (tipo === 'Nutrición' && state.nProt) extra.push(`Alimento: PB ${state.nProt}% · EE ${state.nFat}% · FB ${state.nFib || 0}% · Hum ${state.nHum || 0}% · Cen ${state.nAsh || '—'}%${state.nKcalKg ? ' · ' + state.nKcalKg + ' kcal/kg' : ''}`);
+    return { tipo, titulo: `${tipo} — ${head ? head.textContent.trim() : ''}`, lineas: extra.concat(Registro.lineasDe(res)) };
+  });
+});

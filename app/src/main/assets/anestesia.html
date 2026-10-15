@@ -395,6 +395,7 @@
         <button class="btn btn-ghost" id="btnWake"><i class="ic" data-icon="moon"></i> Registrar despertar</button>
       </div>
       <button class="btn btn-primary" id="btnExportPdf" style="margin-bottom:10px;"><i class="ic" data-icon="pdf"></i> Exportar ficha a PDF</button>
+      <button class="btn btn-amber" id="btnGuardarHistoria" style="margin-bottom:10px;"><i class="ic" data-icon="note"></i> Guardar en historia clínica</button>
       <button class="btn btn-coral" id="btnReset"><i class="ic" data-icon="trash"></i> Limpiar datos / nuevo paciente</button>
     </div>
 
@@ -487,6 +488,10 @@
 <!-- jsPDF incluido en la app: funciona sin internet -->
 <script src="jspdf.umd.min.js"></script>
 <script src="apk.js"></script>
+<script src="fichas/js/utils.js"></script>
+<script src="fichas/js/db.js"></script>
+<script src="fichas/js/ficha-fcv.js"></script>
+<script src="registro.js"></script>
 <script src="nav.js" data-active="anestesia"></script>
 
 <script>
@@ -682,6 +687,7 @@ function bindEvents(){
   document.getElementById('btnFinish').addEventListener('click', onFinishSurgery);
   document.getElementById('btnWake').addEventListener('click', onWake);
   document.getElementById('btnExportPdf').addEventListener('click', exportPdf);
+  document.getElementById('btnGuardarHistoria').addEventListener('click', guardarEnHistoria);
   document.getElementById('btnReset').addEventListener('click', onReset);
 
   document.querySelectorAll('[data-close]').forEach(btn=>{
@@ -1136,11 +1142,20 @@ function renderEventList(){
    EXPORTACIÓN A PDF
    ======================================================================== */
 function exportPdf(){
+  const r = construirPdfAnestesia();
+  if(!r) return;
+  const msg = Apk.guardarPdf(r.doc, r.fileName);
+  vibrate(30);
+  showToast(msg || 'PDF generado');
+}
+
+/* Arma el PDF de la ficha anestésica; devuelve {doc, fileName} o null. */
+function construirPdfAnestesia(){
   if(!window.jspdf){
     showToast('No se pudo cargar el generador de PDF');
-    return;
+    return null;
   }
-  if(!state.caseStarted){ showToast('Ingresá los datos del paciente antes de exportar'); return; }
+  if(!state.caseStarted){ showToast('Ingresá los datos del paciente antes de exportar'); return null; }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
@@ -1356,9 +1371,36 @@ function exportPdf(){
 
   const safeName = (p.name || 'paciente').replace(/[^a-z0-9áéíóúñ]+/gi,'_');
   const fileName = 'ficha_anestesica_'+safeName+'_'+fmtDateShort(state.startTime || new Date().toISOString()).split('/').join('-')+'.pdf';
-  const msg = Apk.guardarPdf(doc, fileName);
-  vibrate(30);
-  showToast(msg || 'PDF generado');
+  return { doc, fileName };
+}
+
+/* Guarda un resumen de la ficha anestésica (y su PDF) en la historia clínica. */
+function guardarEnHistoria(){
+  const r = construirPdfAnestesia();
+  if(!r) return;
+  const p = state.patient;
+  const lineas = [];
+  const dur = (a, b) => (a ? fmtDuration((b ? new Date(b) : new Date()) - new Date(a)) : '—');
+  lineas.push(`Paciente: ${p.name || '—'} · ${p.species || ''} ${p.breed ? '· ' + p.breed : ''} ${p.weight ? '· ' + p.weight + ' kg' : ''}`);
+  lineas.push(`Basales: T° ${p.tempBasal || '—'} · FC ${p.fcBasal || '—'} · FR ${p.frBasal || '—'} · TLLC ${p.tllcBasal || '—'} · ${p.sensorio || ''}`);
+  lineas.push(`Anestesia: inicio ${fmtTime(state.startTime)} · fin ${fmtTime(state.endTime)} · duración ${dur(state.startTime, state.endTime)}`);
+  lineas.push(`Cirugía: inicio ${fmtTime(state.surgicalStartTime)} · fin ${fmtTime(state.surgicalEndTime)} · duración ${dur(state.surgicalStartTime, state.surgicalEndTime || state.endTime)}`);
+  lineas.push(`Despertar: ${fmtTime(state.wakeTime)}`);
+  const drogas = state.events.filter(e => e.type === 'drug' && e.status === 'done').sort((a, b) => new Date(a.time) - new Date(b.time));
+  if(drogas.length) lineas.push('— Fármacos —');
+  drogas.forEach(e => lineas.push(`${fmtTime(e.time)} · ${phaseInfo(e.phase).label}: ${e.drug} ${e.dose}${e.route ? ' ' + e.route : ''}`));
+  const mon = state.events.filter(e => e.type === 'monitor').sort((a, b) => new Date(a.time) - new Date(b.time));
+  if(mon.length) lineas.push('— Monitoreo —');
+  mon.forEach(e => {
+    const v = [['FC', e.fc], ['FR', e.fr], ['SpO₂', e.spo2], ['EtCO₂', e.etco2], ['T°', e.temp], ['PAS', e.pas], ['PAD', e.pad], ['PAM', e.pam]].filter(x => x[1]).map(x => x[0] + ' ' + x[1]).join(' · ');
+    lineas.push(`${fmtTime(e.time)}${e.apnea ? ' · APNEA' : ''}${v ? ' · ' + v : ''}${e.comment ? ' · ' + e.comment : ''}`);
+  });
+  Registro.guardar({
+    tipo: 'Ficha anestésica',
+    titulo: `Ficha anestésica — ${p.name || 'paciente'} (${fmtDateShort(state.startTime || new Date().toISOString())})`,
+    lineas,
+    pdf: { nombre: r.fileName, dataUrl: r.doc.output('datauristring') },
+  });
 }
 
 /* ========================================================================

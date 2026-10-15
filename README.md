@@ -54,6 +54,19 @@ Unidad) o sin etiqueta (listado inicial).
 Cada push compila el APK con GitHub Actions y lo publica en **Releases** (`DosisVet-FCV.apk`).
 Abrí la página de Releases desde el celular, descargá el archivo e instalalo.
 
+## Registro en la historia clínica y Google Drive
+
+- En Dosis, Infusión, Cálculos y Anestesia, el botón **📋 Guardar en historia
+  clínica** guarda el resultado en la consulta del paciente (la consulta desde
+  la que se entró, o la de hoy del paciente elegido). La ficha anestésica se
+  guarda con su PDF adjunto.
+- Cada consulta muestra esos registros en **🧾 Registros de cálculos y
+  procedimientos** y los incluye en el PDF.
+- **☁️ Guardar en Google Drive** (en la consulta, en el paciente y en Ajustes)
+  arma el PDF (consulta o historia completa), el respaldo JSON y los PDF
+  adjuntos, y abre "Guardar en Drive" para elegir la carpeta. El JSON se puede
+  volver a importar desde Ajustes.
+
 ## Datos y copia de seguridad
 
 Todo se guarda solo en el celular. En **Fichas → ⚙️ Ajustes → Copia de

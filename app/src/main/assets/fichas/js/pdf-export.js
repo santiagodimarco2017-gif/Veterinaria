@@ -59,9 +59,45 @@ const PdfExport = (() => {
     return doc.lastAutoTable.finalY + 3;
   }
 
-  function generarPdfFicha(paciente, ficha, config = {}) {
+  // jsPDF (helvetica) solo dibuja Latin-1: reemplaza símbolos que no tiene.
+  function pdfTxt(t) {
+    return String(t ?? '')
+      .replace(/₂/g, '2').replace(/−/g, '-').replace(/→/g, '->').replace(/≈/g, '~').replace(/≥/g, '>=').replace(/≤/g, '<=')
+      .replace(/[–]/g, '-').replace(/[⚠⛔]/g, '!').replace(/[^\u0000-ÿ—–·•…]/gu, '').trim();
+  }
+
+  function seccionRegistrosPdf(doc, ficha, config) {
+    const regs = (ficha.registros || []).slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+    if (!regs.length) return;
+    doc.addPage();
+    membrete(doc, config);
+    let y = seccionTitulo(doc, 'Registros de cálculos y procedimientos', 30);
+    regs.forEach((r) => {
+      if (y > 260) { doc.addPage(); membrete(doc, config); y = 30; }
+      const fecha = new Date(r.fecha);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      const cab = doc.splitTextToSize(pdfTxt(`${isNaN(fecha) ? '' : fecha.toLocaleString('es-AR')} · ${r.tipo || 'Registro'} — ${r.titulo || ''}`), 190);
+      doc.text(cab, 10, y);
+      y += cab.length * 4.6;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      (r.lineas || []).forEach((l) => {
+        const wr = doc.splitTextToSize('• ' + pdfTxt(l), 186);
+        if (y + wr.length * 4 > 282) { doc.addPage(); membrete(doc, config); y = 30; }
+        doc.text(wr, 13, y);
+        y += wr.length * 4;
+      });
+      if (r.pdf) { doc.setTextColor(...GRIS); doc.text(pdfTxt(`Adjunto: ${r.pdf.nombre || 'PDF'} (en la app y en el respaldo)`), 13, y); doc.setTextColor(0, 0, 0); y += 4; }
+      y += 4;
+    });
+  }
+
+  // opts.doc: agrega la consulta a un documento existente (historia completa).
+  function generarPdfFicha(paciente, ficha, config = {}, opts = {}) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const doc = opts.doc || new jsPDF({ unit: 'mm', format: 'a4' });
+    if (opts.doc && opts.nuevaPagina) doc.addPage();
     const edad = Utils.formatEdad(Utils.calcEdad(paciente.paciente.fechaNacimiento));
 
     // ---------- PÁGINA 1: identificación, entorno, plan sanitario ----------
@@ -226,8 +262,36 @@ const PdfExport = (() => {
       });
     }
 
+    seccionRegistrosPdf(doc, ficha, config);
+    if (!opts.doc) pieDePagina(doc);
+    return doc;
+  }
+
+  // Historia clínica completa: todas las consultas del paciente en un PDF.
+  function generarPdfHistoria(paciente, fichas, config = {}) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const orden = fichas.slice().sort((a, b) => (a.fechaAtencion || '').localeCompare(b.fechaAtencion || ''));
+    membrete(doc, config);
+    let y = seccionTitulo(doc, `Historia clínica — ${paciente.paciente.nombre || 'Paciente'} (N° HC ${paciente.id})`, 30);
+    doc.autoTable({
+      startY: y,
+      head: [['Fecha', 'Motivo de consulta', 'Diagnóstico', 'Estado']],
+      body: orden.length ? orden.map((f) => [Utils.formatFechaCorta(f.fechaAtencion), pdfTxt((f.anamnesis && f.anamnesis.motivoConsulta) || '—'),
+        pdfTxt((f.diagnostico && (f.diagnostico.definitivo || f.diagnostico.presuntivo)) || '—'), f.status === 'finalizada' ? 'Finalizada' : 'Borrador'])
+        : [['Sin consultas', '', '', '']],
+      theme: 'striped', styles: { fontSize: 8.5 }, headStyles: { fillColor: VERDE },
+      margin: { left: 10, right: 10 },
+    });
+    orden.forEach((f) => generarPdfFicha(paciente, f, config, { doc, nuevaPagina: true }));
     pieDePagina(doc);
     return doc;
+  }
+
+  function nombreHistoria(paciente) {
+    const especie = paciente.paciente.especie === 'felino' ? 'Felino' : 'Canino';
+    const nombre = (paciente.paciente.nombre || 'paciente').replace(/[^\w-]+/g, '_');
+    return `HistoriaClinica_${paciente.id}_${especie}_${nombre}`;
   }
 
   function nombreArchivo(paciente, ficha) {
@@ -236,5 +300,5 @@ const PdfExport = (() => {
     return `Ficha_${especie}_${nombre}_${ficha.fechaAtencion}.pdf`;
   }
 
-  return { generarPdfFicha, nombreArchivo };
+  return { generarPdfFicha, generarPdfHistoria, nombreArchivo, nombreHistoria, pdfTxt };
 })();

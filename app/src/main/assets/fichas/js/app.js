@@ -218,6 +218,17 @@
     }
 
     document.getElementById('btn-nueva-consulta').addEventListener('click', crearConsulta);
+    appEl.addEventListener('click', async (e) => {
+      if (!e.target.closest('#btn-drive-historia')) return;
+      try {
+        await guardar(p);
+        const todas = await DB.fichas.getByPatient(p.id);
+        await guardarHistoriaEnDrive(p, todas);
+      } catch (err) {
+        console.error(err);
+        showToast('No se pudo preparar la historia: ' + err.message, 'error');
+      }
+    });
     async function crearConsulta() {
       // `p` ya tiene en memoria los últimos cambios tecleados (setPath corre
       // sincrónico en cada input); forzamos el guardado antes de navegar para
@@ -239,6 +250,8 @@
     if (!f) { location.hash = '#/pacientes'; return; }
     const p = await DB.patients.get(f.patientId);
     f.__especie = p.paciente.especie;
+    // Contexto para que las calculadoras guarden en esta consulta.
+    try { localStorage.setItem('uv.ctx', JSON.stringify({ patientId: p.id, fichaId: f.id, nombre: p.paciente.nombre, ts: Date.now() })); } catch (_e) { /* */ }
     renderInto(Render.consultaScreen(f, p));
 
     const guardar = async (data) => {
@@ -370,7 +383,39 @@
         WhatsApp.abrirResumen(p, f);
         return;
       }
+      const quitarReg = e.target.closest('[data-remove-registro]');
+      if (quitarReg) {
+        if (!confirm('¿Quitar este registro de la consulta?')) return;
+        f.registros = (f.registros || []).filter((r) => r.id !== quitarReg.dataset.removeRegistro);
+        await guardar(f);
+        renderInto(Render.consultaScreen(f, p));
+        return;
+      }
+      const abrirReg = e.target.closest('[data-abrir-registro-pdf]');
+      if (abrirReg) {
+        const r = (f.registros || []).find((x) => x.id === abrirReg.dataset.abrirRegistroPdf);
+        if (r && r.pdf) showToast(Apk.guardarBase64(r.pdf.dataUrl.split(',')[1], r.pdf.nombre || 'registro.pdf', 'application/pdf'), 'ok');
+        return;
+      }
       const btnCloud = e.target.closest('#btn-cloud-sync');
+      if (btnCloud && Apk.disponible()) {
+        // En la app: compartir a Google Drive (PDF de la consulta + respaldo JSON).
+        try {
+          await guardar(f);
+          const { __especie, ...limpio } = f;
+          const base = `${PdfExport.nombreHistoria(p)}_consulta_${f.fechaAtencion}`;
+          const archivos = [
+            { nombre: base + '.pdf', mime: 'application/pdf', base64: Apk.pdfABase64(PdfExport.generarPdfFicha(p, limpio)) },
+            { nombre: base + '.json', mime: 'application/json', base64: Apk.textoABase64(JSON.stringify({ app: 'DosisVet-FCV', tipo: 'consulta', paciente: p, ficha: limpio, exportado: new Date().toISOString() })) },
+            ...adjuntosRegistros(limpio),
+          ];
+          showToast(Apk.compartir(archivos, `Consulta de ${p.paciente.nombre || 'paciente'}`, true), 'ok');
+        } catch (err) {
+          console.error(err);
+          showToast('No se pudo preparar el archivo: ' + err.message, 'error');
+        }
+        return;
+      }
       if (btnCloud) {
         const original = btnCloud.textContent;
         btnCloud.textContent = 'Subiendo...'; btnCloud.disabled = true;
@@ -421,7 +466,8 @@
 
         <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-8 mb-1">Copia de seguridad</h2>
         <p class="text-xs text-slate-500 mb-3">Todos los pacientes, consultas (con adjuntos) y la ficha anestésica en curso quedan guardados solo en este celular. Exportá una copia seguido y guardala fuera del teléfono (Drive, mail, PC): si desinstalás la app o cambiás de celular, la importás acá.</p>
-        <button id="btn-exportar-todo" class="w-full rounded-xl bg-slate-800 dark:bg-slate-700 text-white py-3 text-sm font-medium">⬇️ Exportar copia de seguridad</button>
+        <button id="btn-drive-todo" class="w-full rounded-xl bg-blue-600 text-white py-3 text-sm font-medium mb-3">☁️ Guardar copia completa en Google Drive</button>
+        <button id="btn-exportar-todo" class="w-full rounded-xl bg-slate-800 dark:bg-slate-700 text-white py-3 text-sm font-medium">⬇️ Exportar copia de seguridad (Descargas)</button>
         <label class="block w-full rounded-xl border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 py-3 text-sm font-medium text-center mt-3">
           ⬆️ Importar copia de seguridad
           <input id="input-importar" type="file" accept="application/json,.json" class="hidden">
@@ -434,7 +480,8 @@
       await CloudSync.setConfig(cfg);
       showToast('Ajustes guardados ✅', 'ok');
     });
-    document.getElementById('btn-exportar-todo').addEventListener('click', exportarCopia);
+    document.getElementById('btn-exportar-todo').addEventListener('click', () => exportarCopia(false));
+    document.getElementById('btn-drive-todo').addEventListener('click', () => exportarCopia(true));
     document.getElementById('input-importar').addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       e.target.value = '';
@@ -442,12 +489,33 @@
     });
   }
 
+  // ------------------------------------------------------------- Google Drive
+
+  // PDFs adjuntos a los registros (ej. ficha anestésica) como archivos sueltos.
+  function adjuntosRegistros(f) {
+    return (f.registros || []).filter((r) => r.pdf && r.pdf.dataUrl).map((r) => ({
+      nombre: r.pdf.nombre || `registro_${r.id}.pdf`, mime: 'application/pdf', base64: r.pdf.dataUrl.split(',')[1],
+    }));
+  }
+
+  // Historia completa: PDF con todas las consultas + JSON + PDFs adjuntos.
+  async function guardarHistoriaEnDrive(p, fichas) {
+    const base = PdfExport.nombreHistoria(p);
+    const archivos = [
+      { nombre: base + '.pdf', mime: 'application/pdf', base64: Apk.pdfABase64(PdfExport.generarPdfHistoria(p, fichas)) },
+      { nombre: base + '.json', mime: 'application/json', base64: Apk.textoABase64(JSON.stringify({ app: 'DosisVet-FCV', tipo: 'historia', version: 1, exportado: new Date().toISOString(), patients: [p], fichas })) },
+    ];
+    fichas.forEach((f) => archivos.push(...adjuntosRegistros(f)));
+    const msg = Apk.compartir(archivos, `Historia clínica de ${p.paciente.nombre || 'paciente'}`, true);
+    showToast(msg, 'ok');
+  }
+
   // ------------------------------------------------------------- copia de seguridad
 
   // Claves de localStorage de la calculadora de dosis y la ficha anestésica.
   const CLAVES_LOCALES = ['vetAnesthesiaChart_v1', 'uv.sp', 'uv.weight'];
 
-  async function exportarCopia() {
+  async function exportarCopia(aDrive) {
     try {
       const local = {};
       CLAVES_LOCALES.forEach(k => { const v = localStorage.getItem(k); if (v !== null) local[k] = v; });
@@ -458,7 +526,9 @@
         localStorage: local,
       };
       const nombre = `copia_dosisvet_${Utils.todayISO()}.json`;
-      const msg = Apk.guardarTexto(JSON.stringify(copia), nombre, 'application/json');
+      const msg = aDrive
+        ? Apk.compartir([{ nombre, mime: 'application/json', base64: Apk.textoABase64(JSON.stringify(copia)) }], 'Copia de seguridad Dosis Vet', true)
+        : Apk.guardarTexto(JSON.stringify(copia), nombre, 'application/json');
       showToast(`${msg} · ${copia.patients.length} paciente(s), ${copia.fichas.length} consulta(s)`, 'ok');
     } catch (err) {
       console.error(err);
@@ -473,6 +543,10 @@
     } catch (_e) {
       showToast('El archivo no es una copia válida.', 'error');
       return;
+    }
+    // Una consulta exportada a Drive también se puede importar.
+    if (copia && copia.tipo === 'consulta' && copia.paciente && copia.ficha) {
+      copia.patients = [copia.paciente]; copia.fichas = [copia.ficha];
     }
     if (!copia || copia.app !== 'DosisVet-FCV' || !Array.isArray(copia.patients) || !Array.isArray(copia.fichas)) {
       showToast('El archivo no es una copia de esta app.', 'error');

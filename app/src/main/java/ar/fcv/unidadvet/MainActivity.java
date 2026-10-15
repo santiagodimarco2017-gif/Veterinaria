@@ -3,6 +3,7 @@ package ar.fcv.unidadvet;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -28,6 +29,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -209,6 +214,62 @@ public class MainActivity extends Activity {
                 return "Guardado en " + file.getAbsolutePath();
             } catch (Exception e) {
                 return "No se pudo guardar: " + e.getMessage();
+            }
+        }
+
+        /**
+         * Comparte uno o varios archivos. files = JSON [{name, mime, base64}].
+         * Si toDrive es true intenta abrir directamente "Guardar en Drive"; si Drive
+         * no está instalado, muestra el selector de apps.
+         */
+        @JavascriptInterface
+        public String shareFiles(String filesJson, String title, boolean toDrive) {
+            try {
+                File dir = ShareProvider.dir(MainActivity.this);
+                File[] old = dir.listFiles();
+                if (old != null) for (File f : old) f.delete();
+                JSONArray arr = new JSONArray(filesJson);
+                ArrayList<Uri> uris = new ArrayList<>();
+                ClipData clip = null;
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    String name = o.getString("name").replaceAll("[\\\\/:*?\"<>|]", "_");
+                    File f = new File(dir, name);
+                    try (FileOutputStream os = new FileOutputStream(f)) {
+                        os.write(Base64.decode(o.getString("base64"), Base64.DEFAULT));
+                    }
+                    Uri u = ShareProvider.uriFor(MainActivity.this, f);
+                    uris.add(u);
+                    if (clip == null) clip = ClipData.newRawUri(name, u);
+                    else clip.addItem(new ClipData.Item(u));
+                }
+                if (uris.isEmpty()) return "No hay archivos para compartir";
+                Intent send;
+                if (uris.size() == 1) {
+                    send = new Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                } else {
+                    send = new Intent(Intent.ACTION_SEND_MULTIPLE).putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                }
+                send.setType(uris.size() == 1 ? arr.getJSONObject(0).getString("mime") : "*/*");
+                send.putExtra(Intent.EXTRA_SUBJECT, title);
+                send.setClipData(clip);
+                send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                final Intent chooser = Intent.createChooser(send, title);
+                final Intent drive = new Intent(send).setPackage("com.google.android.apps.docs");
+                runOnUiThread(() -> {
+                    try {
+                        startActivity(toDrive ? drive : chooser);
+                    } catch (ActivityNotFoundException e) {
+                        try {
+                            startActivity(chooser);
+                        } catch (ActivityNotFoundException ignored) {
+                            Toast.makeText(MainActivity.this, "No hay apps para compartir", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+                return toDrive ? "Abriendo Google Drive: elegí la carpeta y tocá Guardar" : "Elegí dónde compartir";
+            } catch (Exception e) {
+                return "No se pudo compartir: " + e.getMessage();
             }
         }
 

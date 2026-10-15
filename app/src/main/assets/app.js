@@ -185,6 +185,32 @@ function renderDetail() {
   renderDoseInput(p);
   renderPresentation(p);
   compute();
+  Registro.boton($('#d-result'), registroDosis);
+}
+
+// Descripción de la presentación cargada, para el registro.
+function presentacionTexto() {
+  const P = state.pres;
+  if (!P) return '';
+  if (P.mode === 'tab') return num(P.ta) > 0 ? `Comprimido de ${P.ta} ${P.tau}` : '';
+  if (P.liqType === 'pct') return num(P.pct) > 0 ? `Concentración ${P.pct}%` : '';
+  return num(P.a) > 0 ? `Concentración ${P.a} ${P.au} en ${P.ml || 1} ml` : '';
+}
+
+function registroDosis() {
+  const res = $('#d-result .result');
+  if (!res || res.classList.contains('muted')) return null;
+  const p = currentPreset();
+  const d = state.drug;
+  const lineas = [];
+  if (p.f || p.v) lineas.push(`Indicación: ${p.l}${p.f ? ' · ' + p.f : ''}${p.v ? ' · vía ' + p.v : ''}`);
+  const pres = presentacionTexto();
+  if (pres) lineas.push(pres);
+  return {
+    tipo: 'Dosis',
+    titulo: `${d.free ? 'Cálculo libre' : d.name} — ${res.querySelector('.rhead').textContent.trim()}`,
+    lineas: lineas.concat(Registro.lineasDe(res)),
+  };
 }
 
 // Clasificación de riesgo en gestación (Papich, 1989) citada por Doti.

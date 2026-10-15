@@ -52,5 +52,21 @@ const Apk = (() => {
     return bridge().addCalendarEvent(evento.titulo, evento.descripcion || '', inicio.getTime(), fin.getTime(), !conHora);
   }
 
-  return { disponible, guardarBase64, guardarPdf, guardarTexto, abrirExterno, agendarEnCelular };
+  /**
+   * Comparte archivos con otra app. files: [{nombre, mime, base64}].
+   * aDrive = true abre directo "Guardar en Google Drive" (si está instalado).
+   * En el navegador, los descarga.
+   */
+  function compartir(files, titulo, aDrive) {
+    if (disponible() && bridge().shareFiles) {
+      return bridge().shareFiles(JSON.stringify(files.map((f) => ({ name: f.nombre, mime: f.mime, base64: f.base64 }))), titulo || 'Compartir', !!aDrive);
+    }
+    files.forEach((f) => guardarBase64(f.base64, f.nombre, f.mime));
+    return 'Archivos descargados';
+  }
+
+  const textoABase64 = (texto) => btoa(unescape(encodeURIComponent(texto)));
+  const pdfABase64 = (doc) => doc.output('datauristring').split(',')[1];
+
+  return { disponible, guardarBase64, guardarPdf, guardarTexto, abrirExterno, agendarEnCelular, compartir, textoABase64, pdfABase64 };
 })();

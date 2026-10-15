@@ -314,3 +314,16 @@ window.appBack = () => { location.href = 'index.html'; return true; };
 renderStatic();
 renderDrugs();
 compute();
+Registro.boton($('#result'), () => {
+  const res = $('#result .result');
+  if (!res || res.classList.contains('muted')) return null;
+  const nombres = state.drugs.map((dr) => {
+    const o = dr.key !== 'custom' ? findOption(dr.key) : null;
+    return o ? o.drug.name : (dr.name || 'Fármaco');
+  });
+  const lineas = [
+    `Modo: ${state.mode === 'mix' ? 'todo en una bolsa/jeringa' : 'cada fármaco aparte'} · ${state.vol || '—'} ml a ${state.rate || '—'} ml/h · ${state.set === 'bomba' ? 'bomba' : 'goteo ' + state.set + ' gotas/ml'}`,
+    ...state.drugs.map((dr, i) => `${nombres[i]}: ${dr.dose} ${dr.unit}${num(dr.a) > 0 ? ` · frasco ${dr.a} ${dr.au} en ${dr.ml || 1} ml` : ''}`),
+  ];
+  return { tipo: 'Infusión continua', titulo: `Infusión: ${nombres.join(' + ')}`, lineas: lineas.concat(Registro.lineasDe(res)) };
+});

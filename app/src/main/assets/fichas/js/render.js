@@ -494,6 +494,34 @@ const Render = (() => {
 
   // --- pantalla de detalle de paciente (base + historial de consultas) -----
 
+  // --- registros de cálculos y procedimientos (desde las calculadoras) ------
+
+  function fechaHora(iso) {
+    const d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function seccionRegistros(f) {
+    const regs = (f.registros || []).slice().sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    const items = regs.map((r) => `
+      <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3 mb-3">
+        <div class="flex justify-between items-start gap-2">
+          <div>
+            <span class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">${esc(r.tipo || 'Registro')}</span>
+            <div class="text-sm font-semibold text-slate-800 dark:text-slate-100">${esc(r.titulo || '')}</div>
+            <div class="text-xs text-slate-400">${fechaHora(r.fecha)}</div>
+          </div>
+          <button type="button" data-remove-registro="${esc(r.id)}" class="text-xs text-red-600 shrink-0">Quitar</button>
+        </div>
+        <ul class="mt-2 text-xs text-slate-600 dark:text-slate-300 list-disc pl-4 space-y-0.5">${(r.lineas || []).map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
+        ${r.pdf ? `<button type="button" data-abrir-registro-pdf="${esc(r.id)}" class="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 py-2 text-xs font-medium">📄 Abrir ${esc(r.pdf.nombre || 'PDF')}</button>` : ''}
+      </div>`).join('');
+    return accordion(`Registros de cálculos y procedimientos${regs.length ? ` (${regs.length})` : ''}`, '🧾', `
+      <p class="text-xs text-slate-500 mb-3">Dosis, infusiones, fluidoterapia, transfusión, nutrición y fichas anestésicas guardadas desde las otras pestañas con "📋 Guardar en historia clínica". Se incluyen en el PDF.</p>
+      ${items || '<p class="text-xs text-slate-400">Sin registros todavía.</p>'}
+    `, { id: 'acc-registros', open: regs.length > 0 });
+  }
+
   function patientDetailScreen(p, fichas) {
     const edad = Utils.formatEdad(Utils.calcEdad(p.paciente.fechaNacimiento));
     const historial = fichas.filter(f => f.peso).map(f => ({ fecha: f.fechaAtencion, peso: parseFloat(f.peso) })).sort((a, b) => a.fecha.localeCompare(b.fecha));
@@ -521,6 +549,8 @@ const Render = (() => {
           </div>
           <p class="text-xs text-slate-400 font-mono mt-1">${p.id}</p>
         </div>
+
+        <button id="btn-drive-historia" class="w-full rounded-xl bg-blue-600 text-white py-3 text-sm font-medium mb-4">☁️ Guardar historia clínica completa en Google Drive</button>
 
         <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">Curva de peso</h3>
         <div class="rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4 mb-4">
@@ -560,6 +590,7 @@ const Render = (() => {
           ${seccionDiagnostico(f)}
           ${seccionTratamiento(f)}
           ${seccionRecordatorios(f)}
+          ${seccionRegistros(f)}
         </div>
 
         <div class="grid grid-cols-2 gap-3 mt-4">
@@ -571,7 +602,7 @@ const Render = (() => {
           <button id="btn-whatsapp" class="rounded-xl bg-green-600 text-white py-3 text-sm font-medium">💬 Resumen al tutor</button>
         </div>
         <div class="grid grid-cols-2 gap-3 mt-3">
-          <button id="btn-cloud-sync" class="rounded-xl border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 py-3 text-sm font-medium">☁️ Respaldar en la nube</button>
+          <button id="btn-cloud-sync" class="rounded-xl border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 py-3 text-sm font-medium">${Apk.disponible() ? '☁️ Guardar en Google Drive' : '☁️ Respaldar en la nube'}</button>
           <button id="btn-finalizar" class="rounded-xl border-2 border-emerald-500 text-emerald-700 dark:text-emerald-400 py-3 text-sm font-medium">${f.status === 'finalizada' ? '✅ Finalizada' : 'Marcar finalizada'}</button>
         </div>
       </div>`;

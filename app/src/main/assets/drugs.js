@@ -293,88 +293,185 @@ const DRUGS = [
   ]},
 
   // ───────────── 2. Analgesia, sedación, anestesia, anticonvulsivantes ─────────────
-  { id: 'acepromacina', name: 'Acepromacina', g: 'ana', p: [
-    { l: 'Sedación / ansiedad', sp: 'pg', d: [0.01, 0.2], u: 'mg/kg', f: '', v: 'i.v., i.m., s.c.', max: 3, n: 'Sedación y reducción de ansiedad en dificultad respiratoria. No superar una dosis total de 3 mg.' },
+  { id: 'acepromacina', name: 'Acepromacina', g: 'ana', info: {
+      tipo: 'Fenotiazina.',
+      prec: ['Nunca superar 3 mg totales por dosis.', 'Contraindicada en tromboembolismo arterial: no mejora el flujo colateral, causa hipotensión y agrava la obstrucción del tracto de salida en gatos con miocardiopatía hipertrófica obstructiva.'] }, p: [
+    { l: 'Sedación / estrés respiratorio / edema pulmonar', sp: 'pg', d: [0.01, 0.2], u: 'mg/kg', f: '', v: 'i.v., i.m., s.c.', max: 3, n: 'Máximo 3 mg de dosis total.' },
     { l: 'Crisis hipertensiva', sp: 'p', d: [0.05, 0.1], u: 'mg/kg', f: '', v: 'i.v.', max: 3 },
     { l: 'Crisis hipertensiva', sp: 'g', d: [0.01, 0.05], u: 'mg/kg', f: '', v: 'i.v.', max: 3 },
     { l: 'Protocolo Unidad', sp: 'pg', d: [0.05, 0.2], u: 'mg/kg', f: '', v: 'IM / EV', max: 3, src: 'PDF', n: 'Menos de 0,05 mg/kg suele ser suficiente.' },
   ]},
-  { id: 'propofol', name: 'Propofol', g: 'ana', p: [
-    { l: 'Bolo (convulsiones refractarias)', sp: 'p', d: [3.5, 3.5], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
-    { l: 'Bolo (convulsiones refractarias)', sp: 'g', d: [1, 1], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
-    { l: 'Infusión continua (estatus epiléptico)', sp: 'pg', d: [0.1, 0.25], u: 'mg/kg/min', cri: true, f: 'IC', v: 'i.v.', n: 'Tras el bolo inicial.' },
+  { id: 'clorpromazina', name: 'Clorpromazina', g: 'ana', info: {
+      tipo: 'Fenotiazina; antiemético con efecto sedante.',
+      prec: ['Produce hipotensión, marcada si se combina con opioides: vigilar la volemia.'] }, p: [
+    { l: 'Antiemético', sp: 'pg', d: [0.3, 0.5], u: 'mg/kg', f: 'c/6-8 h', v: 'i.m., i.v., s.c.' },
+  ]},
+  { id: 'proclorperazina', name: 'Proclorperazina', g: 'ana', info: {
+      tipo: 'Fenotiazina; antiemético con efecto sedante.',
+      prec: ['Produce hipotensión, marcada si se combina con opioides: vigilar la volemia.'] }, p: [
+    { l: 'Antiemético', sp: 'pg', d: [0.1, 0.5], u: 'mg/kg', f: 'c/8-12 h', v: 'i.m.' },
+  ]},
+  { id: 'propofol', name: 'Propofol', g: 'ana', info: {
+      prec: ['En cesáreas, la inducción con propofol i.v. produce menos hipoxemia materna y fetal que la inducción con máscara.'] }, p: [
+    { l: 'Estatus epiléptico: bolo', sp: 'p', d: [3.5, 3.5], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
+    { l: 'Anestesia: inducción lenta', sp: 'p', d: [4, 6], u: 'mg/kg', f: 'en 2 min: 25% de la dosis c/30 s hasta efecto', v: 'i.v.' },
+    { l: 'Estatus / inducción: bolo', sp: 'g', d: [1, 1], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
+    { l: 'Mantenimiento: infusión continua', sp: 'pg', d: [0.1, 0.25], u: 'mg/kg/min', cri: true, f: 'IC', v: 'i.v.', n: '6-15 mg/kg/h durante 6-12 h; luego reducir 25% c/2-4 h.' },
     { l: 'Inducción (Protocolo Unidad)', sp: 'p', d: [1, 7], u: 'mg/kg', f: 'a efecto', v: 'i.v.', src: 'PDF' },
     { l: 'Inducción (Protocolo Unidad)', sp: 'g', d: [5, 7], u: 'mg/kg', f: 'a efecto', v: 'i.v.', src: 'PDF' },
   ]},
-  { id: 'buprenorfina', name: 'Buprenorfina', g: 'ana', p: [
-    { l: 'Dolor moderado / traumatismos', sp: 'pg', d: [0.005, 0.03], u: 'mg/kg', f: 'c/6-12 h', v: 'i.v., i.m., s.c., v.o. (transmucosa en gatos)' },
+  { id: 'buprenorfina', name: 'Buprenorfina', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide agonista parcial. Eficaz para dolor leve a moderado.',
+      prec: ['Excelente absorción transmucosa oral en gatos (manejo domiciliario); en perros la dosis por esa vía es muy superior.', 'Los efectos sobre el esfínter de Oddi son en gran medida infundados.'] }, p: [
+    { l: 'Trauma / dificultad respiratoria', sp: 'pg', d: [0.005, 0.02], u: 'mg/kg', f: 'duración 4-8 h', v: 'i.v., i.m.' },
+    { l: 'Dolor espinal', sp: 'p', d: [0.02, 0.06], u: 'mg/kg', f: '', v: 'i.m., s.c.' },
+    { l: 'Tromboembolismo arterial', sp: 'pg', d: [0.01, 0.03], u: 'mg/kg', f: 'c/6-8 h', v: 'i.m., i.v., s.c. (gatos también transmucosa)' },
+    { l: 'Cáncer', sp: 'p', d: [0.01, 0.03], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o., s.c.' },
+    { l: 'Pancreatitis', sp: 'pg', d: [0.01, 0.02], u: 'mg/kg', f: '', v: 'i.v., s.c., i.m.' },
+    { l: 'Pancreatitis (transmucosa oral)', sp: 'p', d: [0.12, 0.12], u: 'mg/kg', f: '', v: 'transmucosa oral' },
+    { l: 'Pancreatitis (transmucosa oral)', sp: 'g', d: [0.01, 0.03], u: 'mg/kg', f: '', v: 'transmucosa oral' },
   ]},
-  { id: 'butorfanol', name: 'Butorfanol', g: 'ana', p: [
-    { l: 'Dolor y sedación', sp: 'pg', d: [0.1, 0.8], u: 'mg/kg', f: '', v: 'i.v., i.m., s.c.' },
+  { id: 'butorfanol', name: 'Butorfanol', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide agonista-antagonista. Analgesia limitada (dolor leve a moderado); efecto antiemético adicional.',
+      prec: ['Posibles efectos cardiovasculares (en personas aumenta la presión arterial pulmonar y el trabajo cardíaco).', 'Como antitusígeno no se recomienda en gatos.'] }, p: [
+    { l: 'Trauma / dolor', sp: 'pg', d: [0.1, 0.8], u: 'mg/kg', f: '', v: 'i.v., i.m., s.c.' },
     { l: 'Carga previa a IC', sp: 'pg', d: [0.1, 0.2], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
-    { l: 'Infusión continua', sp: 'pg', d: [0.1, 0.2], u: 'mg/kg/h', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Infusión continua (trauma, pancreatitis)', sp: 'pg', d: [0.1, 0.2], u: 'mg/kg/h', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Dolor espinal', sp: 'p', d: [0.4, 0.8], u: 'mg/kg', f: '', v: 's.c.' },
+    { l: 'Pancreatitis', sp: 'pg', d: [0.05, 0.6], u: 'mg/kg', f: 'c/6-8 h', v: 'i.m., s.c., i.v.' },
+    { l: 'Pancreatitis (oral)', sp: 'p', d: [0.5, 1], u: 'mg/kg', f: 'c/6-12 h', v: 'v.o.' },
     { l: 'Antitusígeno', sp: 'p', d: [0.5, 0.5], u: 'mg/kg', f: 'c/6-12 h', v: 'v.o.' },
+    { l: 'Antiemético (quimioterapia)', sp: 'p', d: [0.1, 0.4], u: 'mg/kg', f: 'c/6-8 h', v: 'i.m., i.v.' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [0.1, 0.4], u: 'mg/kg', f: 'c/2-12 h', v: 'EV, IM, oral, SC', src: 'PDF' },
   ]},
-  { id: 'morfina', name: 'Morfina', g: 'ana', p: [
-    { l: 'Edema pulmonar / obstrucción respiratoria alta', sp: 'p', d: [0.2, 2], u: 'mg/kg', f: '', v: 'i.m., s.c.' },
-    { l: 'Analgésico', sp: 'p', d: [0.2, 0.4], u: 'mg/kg', f: 'c/4-6 h', v: 'i.m., i.v., s.c.' },
-    { l: 'Analgésico', sp: 'g', d: [0.1, 0.1], u: 'mg/kg', f: 'c/4-6 h', v: 'i.m., i.v., s.c.' },
+  { id: 'hidromorfona', name: 'Hidromorfona', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide agonista puro.', prec: ['Puede producir disforia.'] }, p: [
+    { l: 'Trauma / respiratorio', sp: 'pg', d: [0.1, 0.2], u: 'mg/kg', f: '', v: 'i.v., i.m., s.c.' },
+    { l: 'Carga previa a IC', sp: 'pg', d: [0.025, 0.05], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
+    { l: 'Infusión continua', sp: 'pg', d: [0.01, 0.04], u: 'mg/kg/h', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Tromboembolismo arterial', sp: 'pg', d: [0.05, 0.2], u: 'mg/kg', f: 'c/4-6 h', v: 'i.m., i.v., s.c.' },
+    { l: 'Pancreatitis', sp: 'p', d: [0.05, 0.05], u: 'mg/kg', f: 'c/4 h', v: 'i.v.' },
+    { l: 'Pancreatitis (i.m.)', sp: 'p', d: [0.1, 0.4], u: 'mg/kg', f: '', v: 'i.m.' },
+    { l: 'Pancreatitis', sp: 'g', d: [0.1, 0.1], u: 'mg/kg', f: 'c/7 h', v: 'i.m.' },
   ]},
-  { id: 'fentanilo', name: 'Fentanilo', g: 'ana', p: [
+  { id: 'oximorfona', name: 'Oximorfona', g: 'ana', fam: 'opioide', info: { tipo: 'Opioide agonista puro.' }, p: [
+    { l: 'Dolor espinal', sp: 'p', d: [0.05, 0.05], u: 'mg/kg', f: '', v: 'i.m.' },
+    { l: 'Tromboembolismo arterial', sp: 'pg', d: [0.05, 0.2], u: 'mg/kg', f: 'c/2-4 h', v: 'i.m., i.v., s.c.' },
+  ]},
+  { id: 'metadona', name: 'Metadona', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide agonista puro. Náuseas o vómitos leves: más adecuada que la morfina en pancreatitis.',
+      prec: ['Puede provocar disforia.', 'Las dosis repetidas pueden prolongar su efecto.'] }, p: [
+    { l: 'Pancreatitis / dolor', sp: 'p', d: [0.2, 0.4], u: 'mg/kg', f: 'c/4-6 h o según necesidad', v: 's.c., i.m.' },
+    { l: 'Pancreatitis / dolor', sp: 'g', d: [0.2, 0.2], u: 'mg/kg', f: 'c/4-6 h o según necesidad', v: 's.c., i.m.' },
+  ]},
+  { id: 'meperidina', name: 'Meperidina (petidina)', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide agonista con acción espasmolítica sobre el músculo liso intestinal.',
+      prec: ['NO usar por vía i.v.: libera histamina y causa hipotensión profunda.', 'Solo parenteral en hospitalizados; la inyección es dolorosa.'] }, p: [
+    { l: 'Pancreatitis / dolor', sp: 'p', d: [5, 5], u: 'mg/kg', f: 'c/2 h', v: 's.c., i.m. (nunca i.v.)' },
+    { l: 'Pancreatitis / dolor', sp: 'g', d: [3, 5], u: 'mg/kg', f: 'c/2 h', v: 's.c., i.m. (nunca i.v.)' },
+  ]},
+  { id: 'morfina', name: 'Morfina', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide agonista puro.',
+      prec: ['En obstrucción respiratoria alta y edema pulmonar se indica solo en perros (especialmente braquicéfalos).', 'Vómitos frecuentes.', 'Por vía i.v.: administrar lenta hasta alcanzar el efecto.', 'Dosis altas y repetidas podrían afectar el esfínter de Oddi (relevancia clínica dudosa en perros y gatos).'] }, p: [
+    { l: 'Estrés respiratorio / edema pulmonar', sp: 'p', d: [0.2, 2], u: 'mg/kg', f: 'duración 1-4 h', v: 'i.m., s.c.' },
+    { l: 'Estrés respiratorio: carga previa a IC', sp: 'p', d: [0.1, 0.3], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
+    { l: 'Estrés respiratorio: infusión continua', sp: 'p', d: [0.1, 0.3], u: 'mg/kg/h', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Dolor espinal', sp: 'p', d: [0.3, 2.2], u: 'mg/kg', f: '', v: 's.c., i.m.' },
+    { l: 'Tromboembolismo arterial', sp: 'p', d: [0.2, 0.4], u: 'mg/kg', f: 'c/4-6 h', v: 'i.m., i.v., s.c.' },
+    { l: 'Tromboembolismo arterial', sp: 'g', d: [0.1, 0.1], u: 'mg/kg', f: 'c/4-6 h', v: 'i.m., i.v., s.c.' },
+    { l: 'Pancreatitis', sp: 'p', d: [0.1, 0.5], u: 'mg/kg', f: '', v: 's.c., i.m., i.v.' },
+    { l: 'Pancreatitis: infusión continua', sp: 'p', d: [0.1, 0.1], u: 'mg/kg/h', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Pancreatitis', sp: 'g', d: [0.1, 0.2], u: 'mg/kg', f: '', v: 's.c., i.m., i.v.' },
+  ]},
+  { id: 'fentanilo', name: 'Fentanilo', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide agonista puro de acción corta.',
+      prec: ['Parches: tardan en hacer efecto (12-24 h en perros, 7-12 h en gatos) y duran 72 h. Colocar en zona rasurada y combinar con otro analgésico durante el período inicial.', 'Mucha precaución si el paciente se va a su casa con el parche puesto.'] }, p: [
+    { l: 'Bolo (tromboembolismo)', sp: 'pg', d: [2, 5], u: 'µg/kg', f: 'bolo', v: 'i.v.' },
+    { l: 'Infusión continua (tromboembolismo)', sp: 'pg', d: [2, 5], u: 'µg/kg/h', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Parche transdérmico', sp: 'p', d: [2, 4], u: 'µg/kg/h', parche: true, f: 'cambiar c/72 h', v: 'transdérmica' },
+    { l: 'Parche transdérmico', sp: 'g', d: [25, 25], u: 'µg/animal', parche: true, f: 'cambiar c/72 h', v: 'transdérmica', n: 'Parche de 25 µg/h: entero en tromboembolismo; con media exposición en pancreatitis.' },
     { l: 'Bolo (Protocolo Unidad)', sp: 'pg', d: [2, 4], u: 'µg/kg', f: 'bolo', v: 'i.v.', src: 'PDF' },
     { l: 'Infusión continua (Protocolo Unidad)', sp: 'pg', d: [3, 6], u: 'µg/kg/h', cri: true, f: 'IC', v: 'i.v.', src: 'PDF', n: '⚠ En la tabla de CRI del PDF figura "1-6 µg/kg/min"; se tomó 3-6 µg/kg/h de la tabla de opioides. Verificar.' },
   ]},
-  { id: 'tramadol', name: 'Tramadol', g: 'ana', p: [
-    { l: 'Dolor', sp: 'p', d: [1, 5], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.' },
+  { id: 'tramadol', name: 'Tramadol', g: 'ana', fam: 'opioide', info: {
+      tipo: 'Opioide atípico. Más eficaz en gatos que en perros (en perros el metabolismo inactiva rápido los metabolitos).',
+      prec: ['Puede disminuir la contractilidad cardíaca: no usar en la fase aguda de la pancreatitis (factor depresor del miocardio).', 'Mayor probabilidad de disforia en gatos.', 'Seguro en perras lactantes (mínimo efecto en neonatos).'] }, p: [
+    { l: 'Artrosis / dolor general', sp: 'p', d: [2, 5], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.' },
+    { l: 'Cáncer / osteosarcoma', sp: 'p', d: [1, 4], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.', n: 'Algunas fuentes: 3-5 mg/kg.' },
+    { l: 'Poscesárea (perra lactante)', sp: 'p', d: [10, 10], u: 'mg/kg/día', tomas: 3, f: 'dividido en varias tomas', v: 'v.o.', n: 'Se muestra dividido en 3 tomas.' },
+    { l: 'Pancreatitis / dolor', sp: 'g', d: [2, 4], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [2, 4], u: 'mg/kg', f: 'c/8-12 h', v: 'EV, SC, oral', src: 'PDF' },
   ]},
-  { id: 'gabapentina', name: 'Gabapentina', g: 'ana', p: [
-    { l: 'Dolor crónico / neuropático', sp: 'pg', d: [2.5, 10], u: 'mg/kg', f: 'c/8-24 h', v: 'v.o.' },
-    { l: 'Antiepiléptico', sp: 'p', d: [10, 20], u: 'mg/kg', f: 'c/8 h', v: 'v.o.' },
+  { id: 'hidrocodona', name: 'Hidrocodona bitartrato', g: 'ana', fam: 'opioide', contra: { g: 'No recomendada en gatos.' }, info: { tipo: 'Opioide usado como antitusígeno.' }, p: [
+    { l: 'Antitusígeno', sp: 'p', d: [0.25, 0.5], u: 'mg/kg', f: 'c/6-12 h', v: 'v.o.' },
+  ]},
+  { id: 'gabapentina', name: 'Gabapentina', g: 'ana', info: {
+      tipo: 'Neuromodulador. Excreción principalmente renal, con algo de metabolismo hepático.',
+      prec: ['La sedación excesiva es el principal efecto adverso y limita el aumento de dosis.', 'En perros la vida media es de 3-4 h: respetar intervalos de 6-8 h.'] }, p: [
+    { l: 'Dolor crónico / artrosis', sp: 'p', d: [2.5, 10], u: 'mg/kg', f: 'c/8-24 h', v: 'v.o.' },
+    { l: 'Dolor neuropático (cauda equina)', sp: 'p', d: [8, 10], u: 'mg/kg', f: 'c/8 h', v: 'v.o.' },
+    { l: 'Raíz nerviosa (extrusión discal) / anticonvulsivo', sp: 'p', d: [10, 20], u: 'mg/kg', f: 'c/8 h (ajustable hasta 80 mg/kg c/8 h)', v: 'v.o.' },
+    { l: 'Dolor / anticonvulsivo', sp: 'g', d: [5, 10], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.', n: 'Alternativa: 2,5-10 mg/kg c/8-24 h.' },
   ]},
   { id: 'dipirona', name: 'Dipirona (metamizol)', g: 'ana', p: [
     { l: 'Bolo (Protocolo Unidad)', sp: 'pg', d: [5, 15], u: 'mg/kg', f: 'c/8-12 h', v: 'EV, SC, oral', src: 'PDF' },
     { l: 'Infusión continua (Protocolo Unidad)', sp: 'pg', d: [5, 10], u: 'mg/kg/h', cri: true, f: 'IC', v: 'EV', src: 'PDF' },
   ]},
-  { id: 'paracetamol', name: 'Paracetamol', g: 'ana', contra: { g: 'CONTRAINDICADO EN GATOS (toxicidad grave: metahemoglobinemia, daño hepático).' }, p: [
+  { id: 'paracetamol', name: 'Paracetamol (acetaminofeno)', g: 'ana', contra: { g: 'CONTRAINDICADO EN GATOS: déficit de sulfatación y glucuronidación; metahemoglobinemia, anemia con cuerpos de Heinz, hemólisis e insuficiencia hepática. Antídoto: N-acetilcisteína 140 mg/kg i.v./v.o., luego 70 mg/kg c/6 h.' }, info: {
+      tipo: 'Analgésico no opioide. En perros no tiene los efectos adversos GI y renales de los AINE convencionales.',
+      prec: ['No usar en perros con hepatopatía significativa.'] }, p: [
+    { l: 'Pancreatitis / dolor', sp: 'p', d: [10, 10], u: 'mg/kg', f: 'c/12 h', v: 'v.o., i.v.' },
     { l: 'Protocolo Unidad (solo perro)', sp: 'p', d: [10, 15], u: 'mg/kg', f: 'c/8-12 h', v: 'oral', src: 'PDF' },
   ]},
-  { id: 'meloxicam', name: 'Meloxicam', g: 'ana', p: [
-    { l: 'Dosis general', sp: 'p', d: [0.1, 0.2], u: 'mg/kg', f: 'c/24 h', v: 'v.o. (PDF: SC u oral)' },
+  { id: 'meloxicam', name: 'Meloxicam', g: 'ana', fam: 'aine', p: [
+    { l: 'Cáncer / dolor', sp: 'p', d: [0.1, 0.2], u: 'mg/kg', f: 'c/24 h', v: 'v.o. (PDF: SC u oral)' },
   ]},
-  { id: 'carprofeno', name: 'Carprofeno', g: 'ana', p: [
-    { l: 'Dosis general', sp: 'p', d: [1, 2], u: 'mg/kg', f: 'c/12 h', v: 'v.o.' },
+  { id: 'carprofeno', name: 'Carprofeno', g: 'ana', fam: 'aine', info: {
+      tipo: 'AINE (relación de inhibición COX-1:COX-2 de 65).', prec: ['Sumo cuidado con antecedentes digestivos o renales.'] }, p: [
+    { l: 'Cáncer / artrosis', sp: 'p', d: [1, 2], u: 'mg/kg', f: 'c/12 h', v: 'v.o.' },
+    { l: 'Pancreatitis (domicilio): inicio', sp: 'p', d: [4, 4], u: 'mg/kg', f: 'c/24 h', v: 's.c., i.v., v.o.' },
+    { l: 'Pancreatitis: mantenimiento', sp: 'p', d: [2, 2], u: 'mg/kg', f: 'c/12 h', v: 'v.o.' },
+    { l: 'Pancreatitis (domicilio)', sp: 'g', d: [2, 2], u: 'mg/kg', f: '', v: 's.c., i.v., v.o.', n: 'La fuente no detalla la frecuencia en gatos; extremar precauciones con AINE en esta especie.' },
     { l: 'Protocolo Unidad', sp: 'p', d: [2, 4], u: 'mg/kg', f: 'c/12-24 h', v: '', src: 'PDF' },
   ]},
-  { id: 'firocoxib', name: 'Firocoxib', g: 'ana', p: [
-    { l: 'Dosis general', sp: 'p', d: [5, 5], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
+  { id: 'firocoxib', name: 'Firocoxib', g: 'ana', fam: 'aine', info: {
+      tipo: 'AINE inhibidor selectivo de COX-2: menor riesgo ulcerogénico, pero requiere igual monitoreo renal.' }, p: [
+    { l: 'Cáncer / dolor', sp: 'p', d: [5, 5], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
   ]},
-  { id: 'deracoxib', name: 'Deracoxib', g: 'ana', p: [
-    { l: 'Dosis general', sp: 'p', d: [1, 1], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
+  { id: 'deracoxib', name: 'Deracoxib', g: 'ana', fam: 'aine', p: [
+    { l: 'Cáncer', sp: 'p', d: [1, 1], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
+    { l: 'Osteosarcoma (paliativo)', sp: 'p', d: [1, 2], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
   ]},
-  { id: 'piroxicam', name: 'Piroxicam', g: 'ana', p: [
-    { l: 'Dosis general', sp: 'p', d: [0.3, 0.3], u: 'mg/kg', f: 'c/24-48 h', v: 'v.o.' },
+  { id: 'piroxicam', name: 'Piroxicam', g: 'ana', fam: 'aine', info: {
+      prec: ['Nunca junto con corticoides: alto riesgo de ulceración.', 'En gatos: uso anecdótico en rinitis o inflamación crónica (sin dosis en la fuente).'] }, p: [
+    { l: 'Cáncer', sp: 'p', d: [0.3, 0.3], u: 'mg/kg', f: 'c/24-48 h', v: 'v.o.' },
   ]},
   { id: 'atropina', name: 'Atropina', g: 'ana', p: [
     { l: 'Preanestesia (Protocolo Unidad)', sp: 'pg', d: [0.01, 0.04], u: 'mg/kg', f: '', v: '', src: 'PDF' },
     { l: 'Intoxicación (Protocolo Unidad)', sp: 'pg', d: [0.2, 0.2], u: 'mg/kg', f: '', v: '', src: 'PDF', n: 'Intoxicación por organofosforados / carbamatos.' },
   ]},
-  { id: 'diazepam', name: 'Diazepam', g: 'ana', p: [
-    { l: 'Anticonvulsivante oral', sp: 'g', d: [0.5, 2], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.', n: '⚠ Vigilar hepatotoxicidad idiosincrática aguda; se prefiere fenobarbital para uso crónico.' },
+  { id: 'diazepam', name: 'Diazepam', g: 'ana', info: {
+      tipo: 'Benzodiacepina.',
+      prec: ['Gatos, vía oral: hepatotoxicidad idiosincrática aguda, grave y potencialmente mortal tras 5-11 días de uso diario. Vigilar apetito y actitud y controlar enzimas hepáticas.', 'Perros: no sirve para uso oral crónico (vida media muy corta y tolerancia rápida).'] }, p: [
+    { l: 'Sedación', sp: 'pg', d: [0.2, 0.5], u: 'mg/kg', f: '', v: 'i.v.' },
+    { l: 'Anticonvulsivante oral', sp: 'g', d: [0.5, 2], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.', n: '⚠ Riesgo de hepatotoxicidad grave: se prefiere fenobarbital para uso crónico.' },
     { l: 'Sedación / anestesia (Protocolo Unidad)', sp: 'pg', d: [0.2, 2], u: 'mg/kg', f: '', v: '', src: 'PDF' },
   ]},
   { id: 'midazolam', name: 'Midazolam', g: 'ana', p: [
     { l: 'Protocolo Unidad', sp: 'pg', d: [0.2, 1], u: 'mg/kg', f: '', v: '', src: 'PDF' },
   ]},
-  { id: 'ketamina', name: 'Ketamina', g: 'ana', p: [
+  { id: 'ketamina', name: 'Ketamina', g: 'ana', info: {
+      tipo: 'Anestésico disociativo. A dosis bajas en infusión continua: analgesia adyuvante con mínimo efecto sobre la motilidad GI.',
+      prec: ['Útil como adyuvante, no como analgésico único.', 'Disforia a ritmos de perfusión altos.'] }, p: [
+    { l: 'Analgesia adyuvante (IC)', sp: 'pg', d: [2, 2], u: 'µg/kg/min', cri: true, f: 'IC', v: 'i.v.', n: 'Pancreatitis o dolor refractario.' },
+    { l: 'Anestésico', sp: 'g', d: [4, 11], u: 'mg/kg', f: '', v: 'i.v.' },
     { l: 'Bolo (Protocolo Unidad)', sp: 'pg', d: [2, 10], u: 'mg/kg', f: '', v: 'IV, IM, SC, oral', src: 'PDF' },
     { l: 'Infusión continua (Protocolo Unidad)', sp: 'pg', d: [5, 10], u: 'µg/kg/min', cri: true, f: 'IC', v: 'IV', src: 'PDF', n: 'Equivale a 0,3-0,6 mg/kg/h.' },
   ]},
   { id: 'xilacina', name: 'Xilacina', g: 'ana', p: [
     { l: 'Sedación (Protocolo Unidad)', sp: 'pg', d: [0.5, 3], u: 'mg/kg', f: '', v: 'IV, IM', src: 'PDF' },
     { l: 'Infusión continua (Protocolo Unidad)', sp: 'pg', d: [0.1, 0.5], u: 'mg/kg/h', cri: true, f: 'IC', v: 'IV', src: 'PDF' },
-    { l: 'Emético', sp: 'g', d: [0.44, 0.44], u: 'mg/kg', f: 'única', v: 'i.m.', n: 'Inducción del vómito en gatos.' },
+    { l: 'Emético / sedación', sp: 'g', d: [0.44, 0.44], u: 'mg/kg', f: 'única', v: 'i.m.', n: 'Emético de acción rápida en urgencias toxicológicas. Contar con el antagonista alfa-2 para revertir.' },
   ]},
   { id: 'dexmedetomidina', name: 'Dexmedetomidina', g: 'ana', p: [
     { l: 'Bolo (Protocolo Unidad)', sp: 'pg', d: [2, 10], u: 'µg/kg', f: '', v: 'IV, IM', src: 'PDF' },
@@ -384,9 +481,20 @@ const DRUGS = [
     { l: 'Protocolo Unidad', sp: 'p', d: [0.01, 0.08], u: 'mg/kg', f: '', v: '', src: 'PDF' },
     { l: 'Protocolo Unidad', sp: 'g', d: [0.05, 0.15], u: 'mg/kg', f: '', v: '', src: 'PDF' },
   ]},
-  { id: 'lidocaina', name: 'Lidocaína', g: 'ana', p: [
+  { id: 'lidocaina', name: 'Lidocaína', g: 'ana', info: {
+      tipo: 'Anestésico local; en infusión, analgesia sistémica.',
+      prec: ['Gatos: extremo cuidado por su alta sensibilidad a la toxicidad.', 'Infiltración: no inyectar inadvertidamente en un vaso mamario.', 'Epidural: requiere experiencia y monitoreo (hipotensión grave, riesgo de punzar la duramadre).'] }, p: [
+    { l: 'Analgesia sistémica: bolo (pancreatitis)', sp: 'p', d: [1, 1], u: 'mg/kg', f: 'bolo', v: 'i.v.' },
+    { l: 'Analgesia sistémica: IC (pancreatitis)', sp: 'p', d: [20, 20], u: 'µg/kg/min', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Analgesia sistémica: IC (pancreatitis)', sp: 'g', d: [0.1, 0.1], u: 'mg/kg/h', cri: true, f: 'IC', v: 'i.v.' },
+    { l: 'Bloqueo incisional (cesárea)', sp: 'p', d: [2, 2], u: 'mg/kg', f: 'dosis máxima, diluida al volumen necesario', v: 'infiltración piel y subcutáneo', n: 'Hasta 2 mg/kg.' },
+    { l: 'Epidural', sp: 'p', d: [2, 3], u: 'mg/kg', f: 'única', v: 'epidural', n: 'No superar un volumen de 6 ml. Puede añadirse epinefrina 5 µg/ml para prolongar el bloqueo.' },
     { l: 'Bolo (Protocolo Unidad)', sp: 'pg', d: [1, 2], u: 'mg/kg', f: 'bolo', v: 'i.v.', src: 'PDF' },
-    { l: 'Infusión continua (Protocolo Unidad)', sp: 'pg', d: [30, 50], u: 'µg/kg/min', cri: true, f: 'IC', v: 'i.v.', src: 'PDF', n: 'Equivale a 1,8-3 mg/kg/h. Precaución en gatos (mayor sensibilidad a la toxicidad).' },
+    { l: 'Infusión continua (Protocolo Unidad)', sp: 'pg', d: [30, 50], u: 'µg/kg/min', cri: true, f: 'IC', v: 'i.v.', src: 'PDF', n: 'Equivale a 1,8-3 mg/kg/h.' },
+  ]},
+  { id: 'bupivacaina', name: 'Bupivacaína', g: 'ana', info: {
+      prec: ['No inyectar inadvertidamente en vasos mamarios.', 'Epidural en cesárea: se prefiere lidocaína (la bupivacaína dura demasiado y es un inótropo negativo más potente).'] }, p: [
+    { l: 'Bloqueo incisional (cesárea)', sp: 'p', d: [1, 2], u: 'mg/kg', f: 'única', v: 'infiltración piel y subcutáneo' },
   ]},
   { id: 'fenobarbital', name: 'Fenobarbital', g: 'ana', p: [
     { l: 'Dosis inicial', sp: 'p', d: [2.5, 3], u: 'mg/kg', f: 'c/12 h', v: 'v.o.' },
@@ -404,13 +512,18 @@ const DRUGS = [
     { l: 'Dosis general', sp: 'p', d: [5, 10], u: 'mg/kg', f: 'c/12 h', v: 'v.o.', n: 'Usar 10 mg/kg si recibe fenobarbital.' },
     { l: 'Dosis general', sp: 'g', d: [5, 10], u: 'mg/kg', f: 'c/12-24 h', v: 'v.o.' },
   ]},
-  { id: 'pregabalina', name: 'Pregabalina', g: 'ana', p: [
-    { l: 'Dosis general', sp: 'p', d: [4, 4], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.' },
+  { id: 'pregabalina', name: 'Pregabalina', g: 'ana', info: {
+      tipo: 'Análogo del GABA; excreción renal, vida media ~7 h en perros.', prec: ['Efectos adversos limitados a sedación y ataxia.'] }, p: [
+    { l: 'Neuromodulador / anticonvulsivo', sp: 'p', d: [4, 4], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [1, 4], u: 'mg/kg', f: 'c/12-24 h', v: 'oral', src: 'PDF' },
+  ]},
+  { id: 'amantadina', name: 'Amantadina', g: 'ana', info: {
+      tipo: 'Coadyuvante analgésico (antagonista NMDA). Útil en perros que no toleran AINE o necesitan más analgesia osteoarticular.' }, p: [
+    { l: 'Dolor crónico / artrosis (coadyuvante)', sp: 'p', d: [3, 5], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
   ]},
 
   // ───────────── 3. Gastrointestinales y hepatoprotectores ─────────────
-  { id: 'maropitant', name: 'Maropitant (Cerenia)', g: 'gi', p: [
+  { id: 'maropitant', name: 'Maropitant (Cerenia)', g: 'gi', info: { tipo: 'Antiemético de acción central que además da analgesia visceral.' }, p: [
     { l: 'Antiemético s.c.', sp: 'p', d: [1, 1], u: 'mg/kg', f: 'c/24 h', v: 's.c.', n: 'Precaución en cachorros menores de 11-16 semanas.' },
     { l: 'Antiemético oral', sp: 'p', d: [2, 2], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
     { l: 'Mareo (cinetosis)', sp: 'p', d: [8, 8], u: 'mg/kg', f: 'c/24 h por 2 días', v: 'v.o.' },
@@ -451,6 +564,9 @@ const DRUGS = [
   { id: 'loperamida', name: 'Loperamida', g: 'gi', p: [
     { l: 'Dosis general', sp: 'p', d: [0.12, 0.12], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.' },
     { l: 'Dosis general', sp: 'g', d: [0.08, 0.16], u: 'mg/kg', f: 'c/12 h', v: 'v.o.' },
+  ]},
+  { id: 'difenoxilato', name: 'Difenoxilato', g: 'gi', fam: 'opioide', info: { tipo: 'Opioide modificador de la motilidad intestinal.' }, p: [
+    { l: 'Diarrea (control sintomático)', sp: 'p', d: [0.05, 0.2], u: 'mg/kg', f: 'c/8-12 h', v: 'v.o.' },
   ]},
   { id: 'sulfasalazina', name: 'Sulfasalazina', g: 'gi', p: [
     { l: 'Colitis', sp: 'p', d: [50, 60], u: 'mg/kg/día', tomas: 3, max: 3000, f: 'dividido en 3 tomas', v: 'v.o.', n: 'Máximo 3 g/día. Controlar producción lagrimal.' },
@@ -524,10 +640,11 @@ const DRUGS = [
   { id: 'albuterol', name: 'Albuterol (salbutamol) oral', g: 'car', p: [
     { l: 'Dosis general', sp: 'pg', d: [20, 50], u: 'µg/kg', f: 'c/8-12 h', v: 'v.o.' },
   ]},
-  { id: 'aspirina', name: 'Aspirina', g: 'car', p: [
-    { l: 'Antitrombótico', sp: 'p', d: [0.5, 5], u: 'mg/kg', f: 'c/24 h', v: 'v.o.' },
-    { l: 'Antitrombótico (dosis fija)', sp: 'g', d: [5, 81], u: 'mg/animal', f: 'c/72 h', v: 'v.o.' },
+  { id: 'aspirina', name: 'Aspirina (ácido acetilsalicílico)', g: 'car', fam: 'aine', info: {
+      prec: ['Gatos: déficit de glucuronil transferasa, por eso intervalos de 72 h. Las dosis bajas (5 mg/gato c/72 h) dan menos efectos GI.', 'Anorexia, vómitos y hemorragia o ulceración gastroduodenal grave (catastrófica si hay coagulopatía como CID).'] }, p: [
+    { l: 'Antiagregante (TEA / CID)', sp: 'p', d: [0.5, 1], u: 'mg/kg', f: 'c/24 h', v: 'v.o.', n: 'Algunas fuentes: hasta 0,5-10 mg/kg c/12-24 h.' },
     { l: 'Antipirético', sp: 'p', d: [10, 25], u: 'mg/kg', f: 'c/12 h', v: 'v.o.' },
+    { l: 'Antiagregante (TEA)', sp: 'g', d: [5, 81], u: 'mg/animal', f: 'c/72 h', v: 'v.o.', n: 'Alternativa: 40-81 mg/gato c/48 h. Equivale a 10-25 mg/kg.' },
     { l: 'Antipirético', sp: 'g', d: [10, 10], u: 'mg/kg', f: 'c/72 h', v: 'v.o.' },
   ]},
   { id: 'heparina', name: 'Heparina no fraccionada', g: 'car', p: [
@@ -554,19 +671,30 @@ const DRUGS = [
   ]},
 
   // ───────────── 5. Corticoides, inmunosupresores y endocrinología ─────────────
-  { id: 'prednisolona', name: 'Prednisona / Prednisolona', g: 'end', p: [
-    { l: 'Antiinflamatorio / bronquitis / alergias', sp: 'pg', d: [0.5, 1], u: 'mg/kg', f: 'c/12-24 h', v: 'v.o.', n: 'Reducir gradualmente a días alternos.' },
-    { l: 'Inmunosupresor (AHIM, poliartritis, EII)', sp: 'p', d: [2, 4], u: 'mg/kg/día', tomas: 2, f: 'dividido c/12 h', v: 'v.o.' },
-    { l: 'Inmunosupresor (AHIM, poliartritis, EII)', sp: 'g', d: [2, 8], u: 'mg/kg/día', tomas: 2, f: 'dividido c/12 h', v: 'v.o.', n: 'Preferir siempre prednisolona en gatos.' },
+  { id: 'prednisolona', name: 'Prednisona / Prednisolona', g: 'end', fam: 'aie', info: {
+      prec: ['En gatos se prefiere la prednisolona.', 'Tras un uso prolongado, suspender con reducción gradual.'] }, p: [
+    { l: 'Antiinflamatorio / respiratorio', sp: 'pg', d: [0.25, 2], u: 'mg/kg', f: 'c/12 h', v: 'v.o.' },
+    { l: 'Enfermedad inflamatoria intestinal', sp: 'pg', d: [2.2, 2.2], u: 'mg/kg/día', f: 'luego reducir a la mínima eficaz', v: 'v.o.', n: 'Prednisolona.' },
+    { l: 'Meningoencefalitis', sp: 'p', d: [1, 1], u: 'mg/kg', f: 'c/12 h 2 semanas, luego c/24 h 4 semanas, luego c/48 h', v: 'v.o.' },
+    { l: 'Poliartritis inmunomediada', sp: 'pg', d: [2, 2], u: 'mg/kg', f: 'c/12 h 3-4 días, luego c/24 h 14 días, luego reducir c/4 semanas', v: 'v.o.' },
+    { l: 'Inmunosupresor (AHIM, EII)', sp: 'p', d: [2, 4], u: 'mg/kg/día', tomas: 2, f: 'dividido c/12 h', v: 'v.o.' },
+    { l: 'Inmunosupresor (AHIM, EII)', sp: 'g', d: [2, 8], u: 'mg/kg/día', tomas: 2, f: 'dividido c/12 h', v: 'v.o.' },
+    { l: 'Miastenia gravis', sp: 'g', d: [0.5, 2], u: 'mg/kg', f: 'de 0,5 mg/kg c/48 h a 2 mg/kg c/12 h', v: 'v.o.' },
     { l: 'Hipoadrenocorticismo (Addison)', sp: 'pg', d: [0.25, 0.25], u: 'mg/kg', f: 'c/12 h', v: 'v.o.', n: 'Ajustar al mínimo diario; duplicar ante estrés o cirugía.' },
     { l: 'Prednisolona (Protocolo Unidad)', sp: 'pg', d: [0.5, 2], u: 'mg/kg', f: 'c/12-24 h', v: '', src: 'PDF' },
   ]},
-  { id: 'dexametasona', name: 'Dexametasona', g: 'end', p: [
+  { id: 'dexametasona', name: 'Dexametasona', g: 'end', fam: 'aie', info: {
+      prec: ['Mucho más ulcerógena que la prednisolona.'] }, p: [
+    { l: 'Trastornos respiratorios / emergencias', sp: 'pg', d: [0.1, 0.5], u: 'mg/kg', f: 'c/12 h', v: 'i.v.' },
     { l: 'Crisis asmática / insuficiencia adrenal aguda', sp: 'pg', d: [0.5, 1], u: 'mg/kg', f: 'única', v: 'i.v.' },
     { l: 'Addison: mantenimiento en fluidos', sp: 'pg', d: [0.05, 0.1], u: 'mg/kg', f: 'c/12 h', v: 'i.v. (en fluidos)' },
     { l: 'AHIM hiperaguda', sp: 'p', d: [1, 2], u: 'mg/kg', f: 'bolo único', v: 'i.v.' },
     { l: 'Mantenimiento inmunosupresor', sp: 'g', d: [4, 5], u: 'mg/animal', f: '1 vez por semana', v: 'v.o.' },
     { l: 'Protocolo Unidad', sp: 'pg', d: [0.5, 4], u: 'mg/kg', f: 'c/12-24 h', v: 'EV, SC, oral', src: 'PDF' },
+  ]},
+  { id: 'metilprednisolona', name: 'Acetato de metilprednisolona', g: 'end', fam: 'aie', info: {
+      tipo: 'Corticoide de depósito, más potente que la prednisolona (en perros se cita el 80% de la dosis de prednisolona). Alternativa cuando la vía oral es un problema en gatos.' }, p: [
+    { l: 'Depósito', sp: 'g', d: [10, 10], u: 'mg/animal', f: 'c/2-4 semanas', v: 'i.m.' },
   ]},
   { id: 'azatioprina', name: 'Azatioprina', g: 'end', contra: { g: 'ESTRICTAMENTE CONTRAINDICADA EN GATOS por severa toxicidad medular.' }, p: [
     { l: 'Por peso', sp: 'p', d: [2, 2.2], u: 'mg/kg', f: 'c/24 h, luego días alternos', v: 'v.o.' },

@@ -53,7 +53,7 @@ function criOptions(sp) {
 const findOption = (key) => {
   const [id, i] = String(key).split(':');
   const d = DRUGS.find((x) => x.id === id);
-  return d && d.p[+i] ? { key, drug: d, preset: d.p[+i] } : null;
+  return d && d.p[+i] && d.p[+i].cri ? { key, drug: d, preset: d.p[+i] } : null;
 };
 
 // ───────────── Estado ─────────────
@@ -276,7 +276,9 @@ $('#add-drug').addEventListener('click', () => {
 $('#add-flk').addEventListener('click', () => {
   // Fentanilo + Lidocaína + Ketamina, con las dosis de infusión del vademécum.
   ['fentanilo', 'lidocaina', 'ketamina'].forEach((id) => {
-    const o = criOptions(state.sp).find((x) => x.drug.id === id);
+    // Preferir la infusión del protocolo de la Unidad, si existe.
+    const opts = criOptions(state.sp).filter((x) => x.drug.id === id);
+    const o = opts.find((x) => x.preset.src === 'PDF') || opts[0];
     if (o && !state.drugs.some((d) => d.key === o.key)) state.drugs.push(newDrug(o.key));
   });
   renderDrugs(); refresh();
@@ -304,6 +306,11 @@ $('#drugs').addEventListener('change', (e) => {
 // Botón "atrás" de Android: vuelve a la calculadora de dosis.
 window.appBack = () => { location.href = 'index.html'; return true; };
 
+// Descarta infusiones guardadas que ya no existen (p. ej. tras actualizar el vademécum).
+{
+  const valid = new Set(criOptions(state.sp).map((o) => o.key));
+  state.drugs = state.drugs.filter((d) => d.key === 'custom' || valid.has(d.key));
+}
 renderStatic();
 renderDrugs();
 compute();

@@ -202,9 +202,25 @@ const ALIMENTO = {
   indif: ['cefalexina'],
 };
 
+// Precauciones generales por familia de fármacos.
+const FAM_PREC = {
+  opioide: ['Depresión respiratoria, menor motilidad gastrointestinal y disforia (sobre todo en gatos).',
+    'En hembras lactantes tras una cesárea se prefiere la analgesia opioide a los AINE.',
+    'En tromboembolismo arterial caudal, aplicar en un sitio craneal (vena cefálica o i.m. en zona lumbar craneal) para mejorar la absorción.'],
+  aine: ['Valorar la función renal antes de indicarlos, a los 7 días y luego al menos c/6 meses en tratamientos crónicos. El tutor debe vigilar apetito, vómitos y melena.',
+    'Nefropatía tubular si hay deshidratación, hipotensión u otros nefrotóxicos; también citopenias.',
+    'Al cambiar de un AINE a otro: lavado de al menos 3 días sin tratamiento.',
+    'Nunca combinar con corticoides ni usar en hiperadrenocorticismo. Los bloqueantes H2 (famotidina) no previenen las úlceras por AINE.',
+    'Evitar en pancreatitis aguda, shock o hipotensión y en hembras lactantes tras cesárea.'],
+  aie: ['No son analgésicos primarios: controlan el dolor por inflamación severa, compresión nerviosa o enfermedad inmunomediada.',
+    'Ulcerógenos (más con AINE o con dexametasona); los bloqueantes H2 no previenen estas úlceras.',
+    'Predisponen a infecciones secundarias (por ejemplo urinarias).'],
+};
+const FAM_NOMBRE = { opioide: 'opioides', aine: 'AINE', aie: 'corticoides' };
+
 function drugInfoHtml(d) {
-  if (!d.info) return '';
-  const i = d.info;
+  if (!d.info && !d.fam) return '';
+  const i = d.info || {};
   const ali = ALIMENTO.lejos.includes(d.id) ? 'Lejos de las comidas.' : ALIMENTO.con.includes(d.id) ? 'Con las comidas.' : ALIMENTO.indif.includes(d.id) ? 'Indiferente al alimento.' : '';
   const rows = [];
   if (i.tipo) rows.push(`<div>${esc(i.tipo)}</div>`);
@@ -212,6 +228,7 @@ function drugInfoHtml(d) {
   if (ali) rows.push(`<div><b>Alimento:</b> ${ali}</div>`);
   if (i.prec && i.prec.length) rows.push(`<ul>${i.prec.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`);
   if (i.pres) rows.push(`<div><b>Presentaciones:</b> ${esc(i.pres)}</div>`);
+  if (d.fam) rows.push(`<div><b>Precauciones de los ${FAM_NOMBRE[d.fam]}:</b></div><ul>${FAM_PREC[d.fam].map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`);
   return `<details class="card drug-info"><summary>ℹ️ Información y precauciones</summary>${rows.join('')}</details>`;
 }
 
@@ -257,6 +274,10 @@ function renderPresentation(p) {
   const U = parseUnit(p.u);
   const dim = dimOf(U.q);
   const box = $('#d-pres');
+  if (p.parche) {
+    box.innerHTML = '<div class="hint">Parche transdérmico: el resultado es la liberación en µg/h. Presentaciones habituales: 12, 25, 50, 75 y 100 µg/h.</div>';
+    return;
+  }
   if (dim === 'vol') {
     box.innerHTML = '<div class="hint">La dosis ya está expresada en ml: no hace falta concentración.</div>';
     return;
@@ -367,6 +388,19 @@ function compute() {
   }
 
   if (U.per === 'm2') out.push(`<div class="kv"><span>Superficie corporal</span><b>${fmt(bsa(w, state.sp))} m²</b></div>`);
+
+  if (p.parche) {
+    const mcgH = U.per === 'kg' ? dose * w : dose;
+    const r = p.d[1] > p.d[0] && U.per === 'kg' ? [p.d[0] * w, p.d[1] * w] : null;
+    const tam = [12, 25, 50, 75, 100];
+    const cerca = tam.reduce((a, b) => (Math.abs(b - mcgH) < Math.abs(a - mcgH) ? b : a));
+    out.push(`<div class="kv big hl"><span>Parche necesario</span><b>${fmt(mcgH)} µg/h</b></div>`);
+    if (r) out.push(`<div class="kv sub"><span>Rango</span><b>${fmt(r[0])} – ${fmt(r[1])} µg/h</b></div>`);
+    out.push(`<div class="kv"><span>Presentación más cercana</span><b>${cerca} µg/h${cerca !== mcgH ? ` (= ${fmt(cerca / w, 2)} µg/kg/h)` : ''}</b></div>`);
+    $('#d-result').innerHTML = `<div class="result"><div class="rhead">${state.sp === 'g' ? '🐱 Gato' : '🐶 Perro'} · ${fmt(w)} kg</div>${warn.map((t) => `<div class="alert warn">⚠ ${esc(t)}</div>`).join('')}${out.join('')}</div>`;
+    clearCRI();
+    return;
+  }
 
   let amount = amountFor(p, dose); // por toma, por día o por unidad de tiempo
   const range = !p.tiers && p.d[1] > p.d[0] ? [amountFor(p, p.d[0]), amountFor(p, p.d[1])] : null;

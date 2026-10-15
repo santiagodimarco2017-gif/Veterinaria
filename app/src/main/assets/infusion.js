@@ -276,7 +276,7 @@ $('#add-drug').addEventListener('click', () => {
 $('#add-flk').addEventListener('click', () => {
   // Fentanilo + Lidocaína + Ketamina, con las dosis de infusión del vademécum.
   ['fentanilo', 'lidocaina', 'ketamina'].forEach((id) => {
-    // Preferir la infusión del protocolo de la Unidad, si existe.
+    // Preferir la infusión del protocolo propio, si existe.
     const opts = criOptions(state.sp).filter((x) => x.drug.id === id);
     const o = opts.find((x) => x.preset.src === 'PDF') || opts[0];
     if (o && !state.drugs.some((d) => d.key === o.key)) state.drugs.push(newDrug(o.key));

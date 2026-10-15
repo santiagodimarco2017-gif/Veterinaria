@@ -1,4 +1,4 @@
-# Dosis Vet · Unidad Veterinaria FCV
+# Dosis Vet
 
 App Android para la clínica diaria de perros y gatos. Funciona sin internet y
 reúne cinco herramientas, con una barra inferior para pasar de una a otra:
@@ -40,8 +40,8 @@ Los antibióticos siguen a Doti FJ, *Uso práctico de los antibióticos en la
 clínica de pequeños animales* (Inter-Médica, 2009): posología por especie e
 indicación de cada prospecto, régimen convencional (Tabla 4.5), interferencia
 del alimento (4.3), precauciones (4.4) y clase de riesgo en gestación.
-Cada indicación muestra su fuente: **Doti**, **Unidad** (vademécum de la
-Unidad) o sin etiqueta (listado inicial).
+Cada indicación muestra su fuente: **Doti**, «Protocolo propio» (vademécum /
+protocolo propio) o sin etiqueta (listado inicial).
 
 - Elegís especie y peso, el fármaco y la indicación.
 - Cargás la presentación: líquido (`X mg en Y ml`, `UI/ml` o `%`) o comprimido (`mg por comprimido`).
@@ -51,7 +51,7 @@ Unidad) o sin etiqueta (listado inicial).
 
 ## Descargar el APK
 
-Cada push compila el APK con GitHub Actions y lo publica en **Releases** (`DosisVet-FCV.apk`).
+Cada push compila el APK con GitHub Actions y lo publica en **Releases** (`DosisVet.apk`).
 Abrí la página de Releases desde el celular, descargá el archivo e instalalo.
 
 ## Internación

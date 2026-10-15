@@ -55,7 +55,7 @@ const CalendarSync = (() => {
       `Tutor: ${paciente.tutor.nombre || '—'}${paciente.tutor.telefono ? ' · ' + paciente.tutor.telefono : ''}`,
     ];
     if (recordatorio.notas) descripcionPartes.push(`Notas: ${recordatorio.notas}`);
-    descripcionPartes.push('Generado desde Ficha Clínica FCV-UNR.');
+    descripcionPartes.push('Generado desde Dosis Vet.');
 
     const evento = {
       summary,

@@ -1,6 +1,5 @@
-// pdf-export.js — genera el PDF clínico membretado, replicando el esquema de
-// 3 páginas de la Ficha Técnica de la Cátedra de Clínica de Animales de
-// Compañía (FCV - UNR). Usa jsPDF + jspdf-autotable (cargados por CDN).
+// pdf-export.js — genera el PDF clínico membretado de la historia clínica
+// (3 páginas por consulta). Usa jsPDF + jspdf-autotable (cargados por CDN).
 'use strict';
 
 const PdfExport = (() => {
@@ -14,12 +13,12 @@ const PdfExport = (() => {
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
-    doc.text(config.institucion || 'Facultad de Ciencias Veterinarias — UNR', 10, 10);
+    doc.text(config.institucion || 'Historia clínica veterinaria', 10, 10);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    doc.text(config.catedra || 'Cátedra de Clínica Médica y Quirúrgica de Animales de Compañía', 10, 16);
+    doc.text(config.catedra || 'Clínica de animales de compañía', 10, 16);
     doc.setFontSize(8);
-    doc.text(config.profesional || 'Historia clínica veterinaria', 10, 21);
+    doc.text(config.profesional || 'Dosis Vet', 10, 21);
     doc.setTextColor(0, 0, 0);
   }
 

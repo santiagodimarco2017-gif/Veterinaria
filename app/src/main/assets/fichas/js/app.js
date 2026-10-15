@@ -421,7 +421,7 @@
           const base = `${PdfExport.nombreHistoria(p)}_consulta_${f.fechaAtencion}`;
           const archivos = [
             { nombre: base + '.pdf', mime: 'application/pdf', base64: Apk.pdfABase64(PdfExport.generarPdfFicha(p, limpio)) },
-            { nombre: base + '.json', mime: 'application/json', base64: Apk.textoABase64(JSON.stringify({ app: 'DosisVet-FCV', tipo: 'consulta', paciente: p, ficha: limpio, exportado: new Date().toISOString() })) },
+            { nombre: base + '.json', mime: 'application/json', base64: Apk.textoABase64(JSON.stringify({ app: 'DosisVet', tipo: 'consulta', paciente: p, ficha: limpio, exportado: new Date().toISOString() })) },
             ...adjuntosRegistros(limpio),
           ];
           showToast(Apk.compartir(archivos, `Consulta de ${p.paciente.nombre || 'paciente'}`, true), 'ok');
@@ -518,7 +518,7 @@
     const base = PdfExport.nombreHistoria(p);
     const archivos = [
       { nombre: base + '.pdf', mime: 'application/pdf', base64: Apk.pdfABase64(PdfExport.generarPdfHistoria(p, fichas)) },
-      { nombre: base + '.json', mime: 'application/json', base64: Apk.textoABase64(JSON.stringify({ app: 'DosisVet-FCV', tipo: 'historia', version: 1, exportado: new Date().toISOString(), patients: [p], fichas })) },
+      { nombre: base + '.json', mime: 'application/json', base64: Apk.textoABase64(JSON.stringify({ app: 'DosisVet', tipo: 'historia', version: 1, exportado: new Date().toISOString(), patients: [p], fichas })) },
     ];
     fichas.forEach((f) => archivos.push(...adjuntosRegistros(f)));
     const msg = Apk.compartir(archivos, `Historia clínica de ${p.paciente.nombre || 'paciente'}`, true);
@@ -535,7 +535,7 @@
       const local = {};
       CLAVES_LOCALES.forEach(k => { const v = localStorage.getItem(k); if (v !== null) local[k] = v; });
       const copia = {
-        app: 'DosisVet-FCV', version: 1, exportado: new Date().toISOString(),
+        app: 'DosisVet', version: 1, exportado: new Date().toISOString(),
         patients: await DB.patients.getAll(),
         fichas: await DB.fichas.getAll(),
         internaciones: await DB.internaciones.getAll(),
@@ -564,7 +564,7 @@
     if (copia && copia.tipo === 'consulta' && copia.paciente && copia.ficha) {
       copia.patients = [copia.paciente]; copia.fichas = [copia.ficha];
     }
-    if (!copia || copia.app !== 'DosisVet-FCV' || !Array.isArray(copia.patients) || !Array.isArray(copia.fichas)) {
+    if (!copia || !['DosisVet', 'DosisVet-FCV'].includes(copia.app) || !Array.isArray(copia.patients) || !Array.isArray(copia.fichas)) {
       showToast('El archivo no es una copia de esta app.', 'error');
       return;
     }

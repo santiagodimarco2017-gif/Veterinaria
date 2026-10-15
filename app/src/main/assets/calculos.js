@@ -256,7 +256,7 @@ function calcTransfusion() {
   return box(warn, rows, `${state.sp === 'g' ? '🐱 Gato' : '🐶 Perro'} · ${fmt(w, 2)} kg · volemia ${fmt(bv)} ml/kg`);
 }
 
-// ───────────── Nutrición (apuntes de la Cátedra de Nutrición Animal) ─────────────
+// ───────────── Nutrición (Hand y col., Nutrición clínica en pequeños animales) ─────────────
 // RER = 70 × PC^0,75; RED = RER × factor de corrección (FC).
 // [clave, etiqueta, FC mínimo, FC máximo, nota]
 const ETAPAS = {

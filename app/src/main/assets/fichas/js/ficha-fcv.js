@@ -1,5 +1,5 @@
-// ficha-fcv.js — estructura clínica troncal basada en la Ficha Técnica de la
-// Cátedra de Clínica Médica y Quirúrgica de Animales de Compañía (FCV - UNR).
+// ficha-fcv.js — estructura clínica troncal de la ficha de animales de
+// compañía.
 'use strict';
 
 const FCV = (() => {

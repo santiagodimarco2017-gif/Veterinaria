@@ -174,7 +174,7 @@ function renderDetail() {
 
   $('#d-presets').innerHTML = d.free ? '' : ps.map((p, i) => `
     <button class="preset ${i === state.pi ? 'on' : ''}" data-i="${i}">
-      <span class="pl">${esc(p.l)}${p.src === 'PDF' ? ' <span class="tag">Unidad</span>' : p.src === 'Doti' ? ' <span class="tag doti">Doti</span>' : ''}${p.cri ? ' <span class="tag cri">IC</span>' : ''}</span>
+      <span class="pl">${esc(p.l)}${p.src === 'Doti' ? ' <span class="tag doti">Doti</span>' : ''}${p.cri ? ' <span class="tag cri">IC</span>' : ''}</span>
       <span class="pr">${esc(rangeText(p))}${p.f ? ' · ' + esc(p.f) : ''}</span>
     </button>`).join('');
   $('#d-presets-wrap').hidden = d.free || ps.length < 2;
@@ -275,7 +275,7 @@ function renderPresetInfo(p) {
   if (p.f) bits.push(`<div><b>Frecuencia:</b> ${esc(p.f)}</div>`);
   if (p.v) bits.push(`<div><b>Vía:</b> ${esc(p.v)}</div>`);
   if (p.n) bits.push(`<div class="note">${esc(p.n)}</div>`);
-  if (p.src === 'PDF') bits.push('<div class="src">Fuente: vademécum de la Unidad (PDF)</div>');
+  if (p.src === 'PDF') bits.push('<div class="src">Fuente: vademécum / protocolo propio</div>');
   if (p.src === 'Doti') bits.push('<div class="src">Fuente: Doti FJ. Uso práctico de los antibióticos en la clínica de pequeños animales. Inter-Médica, 2009.</div>');
   $('#d-info').innerHTML = bits.join('');
   $('#d-info').hidden = !bits.length;

@@ -36,21 +36,21 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon assembleRelease -PbuildNumber=${{ github.run_number }}
-          cp app/build/outputs/apk/release/app-release.apk DosisVet-FCV.apk
+          cp app/build/outputs/apk/release/app-release.apk DosisVet.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: DosisVet-FCV-apk
-          path: DosisVet-FCV.apk
+          name: DosisVet-apk
+          path: DosisVet.apk
 
       - name: Publicar Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
-          name: Dosis Vet FCV v1.0.${{ github.run_number }}
+          name: Dosis Vet v1.0.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
           body: |
             APK de la calculadora de dosis (perros y gatos).
-            Descargá **DosisVet-FCV.apk** desde el celular e instalalo (permitir "instalar apps de origen desconocido").
-          files: DosisVet-FCV.apk
+            Descargá **DosisVet.apk** desde el celular e instalalo (permitir "instalar apps de origen desconocido").
+          files: DosisVet.apk
           make_latest: true

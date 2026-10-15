@@ -1,0 +1,36 @@
+/* styles.css — ajustes finos que Tailwind (vía CDN) no cubre: accordions,
+   modo oscuro de inputs nativos, e impresión. */
+
+html { -webkit-tap-highlight-color: transparent; }
+body { -webkit-text-size-adjust: 100%; }
+
+/* Accordion: rotar el indicador al abrir */
+.ficha-accordion > summary { -webkit-appearance: none; appearance: none; }
+.ficha-accordion > summary::-webkit-details-marker { display: none; }
+.ficha-accordion[open] > summary .chevron { transform: rotate(180deg); }
+.ficha-accordion .chevron { transition: transform .2s ease; display: inline-block; }
+
+/* Inputs nativos (date/select) legibles en modo oscuro */
+:root.dark input[type="date"],
+:root.dark input[type="number"],
+:root.dark select { color-scheme: dark; }
+
+/* Evita doble scroll horizontal en pantallas angostas */
+* { min-width: 0; }
+input, select, textarea { font-size: 16px; } /* evita auto-zoom en iOS */
+
+/* Impresión: esconder navegación y botones de acción, expandir accordions */
+@media print {
+  header, #btn-pdf, #btn-whatsapp, #btn-cloud-sync, #btn-finalizar,
+  #btn-nuevo-paciente, #btn-nueva-consulta, #offline-badge, a[href^="#/"] {
+    display: none !important;
+  }
+  .ficha-accordion { break-inside: avoid; border: 1px solid #ccc !important; }
+  .ficha-accordion > summary .chevron { display: none; }
+  body { background: #fff !important; color: #000 !important; }
+  details > *:not(summary) { display: block !important; }
+}
+
+/* Scrollbar sutil para listas largas */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(100,116,139,.35); border-radius: 8px; }

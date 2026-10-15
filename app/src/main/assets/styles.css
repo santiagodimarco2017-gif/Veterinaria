@@ -119,9 +119,3 @@ input[type=range] { width: 100%; margin: 12px 0 0; accent-color: var(--accent); 
 .alert.warn { background: var(--warn-bg); color: var(--warn); }
 .alert.bad { background: var(--bad-bg); color: var(--bad); font-weight: 700; }
 
-.tool-link { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); background: var(--card); border: 2px solid var(--accent); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
-.tool-link:active { background: var(--accent-soft); }
-.tool-link .ti { font-size: 26px; }
-.tool-link .tt { flex: 1; display: flex; flex-direction: column; }
-.tool-link small { color: var(--muted); font-size: 13px; }
-.tool-link .ta { color: var(--accent); font-size: 26px; font-weight: 700; }

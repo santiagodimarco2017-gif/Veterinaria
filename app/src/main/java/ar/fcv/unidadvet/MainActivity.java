@@ -10,22 +10,51 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.CalendarContract;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends Activity {
 
+    /**
+     * Las páginas de assets/ se sirven bajo este dominio https virtual (no sale a
+     * internet): así la app tiene un origen seguro estable para IndexedDB,
+     * localStorage y crypto.randomUUID().
+     */
+    private static final String HOST = "appassets.androidplatform.net";
+    private static final String BASE_URL = "https://" + HOST + "/";
+    private static final int REQUEST_FILE = 1001;
+
+    private static final Map<String, String> MIME = new HashMap<>();
+
+    static {
+        MIME.put("html", "text/html");
+        MIME.put("js", "application/javascript");
+        MIME.put("css", "text/css");
+        MIME.put("json", "application/json");
+        MIME.put("png", "image/png");
+        MIME.put("svg", "image/svg+xml");
+    }
+
     private WebView webView;
+    private ValueCallback<Uri[]> fileCallback;
 
     @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     @Override
@@ -35,29 +64,83 @@ public class MainActivity extends Activity {
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
-        s.setAllowFileAccess(true);
+        s.setAllowFileAccess(false);
         webView.setWebViewClient(new WebViewClient() {
-            // Las páginas de la app son locales; cualquier enlace externo se abre en el navegador.
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                if (!HOST.equals(uri.getHost())) return null;
+                return serveAsset(uri.getPath());
+            }
+
+            // Cualquier enlace que no sea de la app (WhatsApp, Google...) se abre afuera.
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                if ("file".equals(uri.getScheme())) return false;
+                if (HOST.equals(uri.getHost())) return false;
+                startExternal(new Intent(Intent.ACTION_VIEW, uri), null);
+                return true;
+            }
+        });
+        webView.setWebChromeClient(new WebChromeClient() {
+            // Selector de archivos para los <input type="file"> (adjuntos, importar copia).
+            // Tener un WebChromeClient también habilita los diálogos confirm()/alert().
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+                if (fileCallback != null) fileCallback.onReceiveValue(null);
+                fileCallback = callback;
                 try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                } catch (ActivityNotFoundException ignored) {
+                    Intent intent = params.createIntent();
+                    if (params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) {
+                        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    }
+                    startActivityForResult(intent, REQUEST_FILE);
+                } catch (ActivityNotFoundException e) {
+                    fileCallback = null;
+                    return false;
                 }
                 return true;
             }
         });
-        // Necesario para que funcionen confirm()/alert() de la ficha anestésica.
-        webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new Bridge(), "AndroidBridge");
         setContentView(webView);
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
         } else {
-            webView.loadUrl("file:///android_asset/index.html");
+            webView.loadUrl(BASE_URL + "index.html");
         }
+    }
+
+    private WebResourceResponse serveAsset(String path) {
+        if (path == null || path.equals("/")) path = "/index.html";
+        String file = path.substring(1);
+        String ext = file.contains(".") ? file.substring(file.lastIndexOf('.') + 1) : "";
+        String mime = MIME.containsKey(ext) ? MIME.get(ext) : "application/octet-stream";
+        try {
+            InputStream in = getAssets().open(file);
+            return new WebResourceResponse(mime, "UTF-8", in);
+        } catch (IOException e) {
+            WebResourceResponse notFound = new WebResourceResponse("text/plain", "UTF-8", null);
+            notFound.setStatusCodeAndReasonPhrase(404, "Not Found");
+            return notFound;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_FILE && fileCallback != null) {
+            Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+            if (resultCode == RESULT_OK && data != null && data.getClipData() != null) {
+                int n = data.getClipData().getItemCount();
+                result = new Uri[n];
+                for (int i = 0; i < n; i++) result[i] = data.getClipData().getItemAt(i).getUri();
+            }
+            fileCallback.onReceiveValue(result);
+            fileCallback = null;
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -77,52 +160,75 @@ public class MainActivity extends Activity {
         });
     }
 
-    /** Funciones nativas expuestas a JavaScript como window.AndroidBridge. */
+    /** Abre otra app (navegador, WhatsApp, calendario, visor de PDF) desde el hilo de UI. */
+    private void startExternal(Intent intent, String errorMessage) {
+        runOnUiThread(() -> {
+            try {
+                startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                if (errorMessage != null) Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /** Funciones nativas expuestas a JavaScript como window.AndroidBridge (ver assets/apk.js). */
     private class Bridge {
-        /** Guarda un PDF (en base64) en Descargas y lo abre. Devuelve un mensaje para mostrar. */
+
+        /** Guarda un archivo (base64) en Descargas; los PDF además se abren. Devuelve un mensaje. */
         @JavascriptInterface
-        public String savePdf(String base64, String fileName) {
+        public String saveFile(String base64, String fileName, String mime) {
             try {
                 byte[] data = Base64.decode(base64, Base64.DEFAULT);
                 if (Build.VERSION.SDK_INT >= 29) {
                     ContentResolver resolver = getContentResolver();
                     ContentValues values = new ContentValues();
                     values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
-                    values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
+                    values.put(MediaStore.Downloads.MIME_TYPE, mime);
                     values.put(MediaStore.Downloads.IS_PENDING, 1);
                     Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                    if (uri == null) return "No se pudo crear el archivo PDF";
+                    if (uri == null) return "No se pudo crear el archivo";
                     try (OutputStream os = resolver.openOutputStream(uri)) {
                         os.write(data);
                     }
                     values.clear();
                     values.put(MediaStore.Downloads.IS_PENDING, 0);
                     resolver.update(uri, values, null, null);
-                    openPdf(uri);
-                    return "PDF guardado en Descargas";
+                    if ("application/pdf".equals(mime)) {
+                        Intent view = new Intent(Intent.ACTION_VIEW)
+                                .setDataAndType(uri, mime)
+                                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startExternal(view, null); // sin visor de PDF el archivo igual queda guardado
+                    }
+                    return "Guardado en Descargas";
                 }
                 File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
                 File file = new File(dir, fileName);
                 try (FileOutputStream os = new FileOutputStream(file)) {
                     os.write(data);
                 }
-                return "PDF guardado en " + file.getAbsolutePath();
+                return "Guardado en " + file.getAbsolutePath();
             } catch (Exception e) {
-                return "No se pudo guardar el PDF: " + e.getMessage();
+                return "No se pudo guardar: " + e.getMessage();
             }
         }
-    }
 
-    private void openPdf(Uri uri) {
-        runOnUiThread(() -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(uri, "application/pdf");
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            try {
-                startActivity(intent);
-            } catch (ActivityNotFoundException ignored) {
-                // Sin visor de PDF: el archivo igual queda en Descargas.
-            }
-        });
+        @JavascriptInterface
+        public void openUrl(String url) {
+            startExternal(new Intent(Intent.ACTION_VIEW, Uri.parse(url)), "No hay una app para abrir este enlace");
+        }
+
+        /** Abre el calendario del celular con el evento precargado (el usuario confirma y guarda). */
+        @JavascriptInterface
+        public String addCalendarEvent(String title, String description, double beginMillis, double endMillis, boolean allDay) {
+            Intent intent = new Intent(Intent.ACTION_INSERT)
+                    .setData(CalendarContract.Events.CONTENT_URI)
+                    .putExtra(CalendarContract.Events.TITLE, title)
+                    .putExtra(CalendarContract.Events.DESCRIPTION, description)
+                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, (long) beginMillis)
+                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, (long) endMillis)
+                    .putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, allDay);
+            startExternal(intent, "No se encontró una app de calendario");
+            return "Abriendo el calendario: confirmá el evento para guardarlo";
+        }
     }
 }

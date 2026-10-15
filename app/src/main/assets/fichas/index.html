@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<title>Ficha Clínica · Animales de Compañía FCV-UNR</title>
+<meta name="description" content="Historia clínica veterinaria digital, offline-first, basada en la Ficha Técnica de la Cátedra de Clínica de Animales de Compañía (FCV - UNR).">
+<meta name="theme-color" content="#068136">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ficha Clínica">
+
+<!-- Tailwind precompilado (css/tailwind.css): la app funciona sin internet -->
+<link rel="stylesheet" href="./css/tailwind.css">
+<link rel="stylesheet" href="./css/styles.css">
+
+<script src="../jspdf.umd.min.js"></script>
+<script src="../jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
+
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-700">
+    <div class="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
+      <a href="#/pacientes" class="flex items-center gap-2">
+        <span class="text-2xl">🩺</span>
+        <div class="leading-tight">
+          <div class="font-bold text-sm">Ficha Clínica</div>
+          <div class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">Animales de Compañía · FCV-UNR</div>
+        </div>
+      </a>
+      <div class="flex items-center gap-1">
+        <a href="#/config" aria-label="Ajustes" class="w-10 h-10 flex items-center justify-center rounded-full active:bg-slate-100 dark:active:bg-slate-700 text-xl">⚙️</a>
+        <button id="btn-dark-toggle" aria-label="Cambiar tema" class="w-10 h-10 flex items-center justify-center rounded-full active:bg-slate-100 dark:active:bg-slate-700 text-xl">🌓</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="max-w-2xl mx-auto"></main>
+
+  <script src="../apk.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/db.js"></script>
+  <script src="./js/ficha-fcv.js"></script>
+  <script src="./js/render.js"></script>
+  <script src="./js/whatsapp.js"></script>
+  <script src="./js/pdf-export.js"></script>
+  <script src="./js/cloud-sync.js"></script>
+  <script src="./js/calendar-sync.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="../nav.js" data-active="fichas" data-base="../"></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="appnav-dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -63,7 +63,7 @@
     display:flex; align-items:center; gap:10px;
     border-bottom:1px solid var(--border-soft);
   }
-  .back-link{color:var(--teal); text-decoration:none; font-size:28px; line-height:1; padding:0 6px 2px 0; font-weight:700;}
+  #toast{bottom:calc(80px + var(--safe-b)) !important;}
   .topbar .dot{width:9px;height:9px;border-radius:50%;background:var(--teal); box-shadow:0 0 8px var(--teal);}
   .topbar .dot.off{background:var(--text-faint); box-shadow:none;}
   .topbar h1{font-size:15px; font-weight:700; letter-spacing:.3px; margin:0; flex:1;}
@@ -253,7 +253,6 @@
 <body>
 
 <div class="topbar">
-  <a href="index.html" class="back-link" aria-label="Volver a la calculadora">‹</a>
   <span class="dot off" id="statusDot"></span>
   <div>
     <h1>Ficha Anestésica Veterinaria</h1>
@@ -487,6 +486,8 @@
 
 <!-- jsPDF incluido en la app: funciona sin internet -->
 <script src="jspdf.umd.min.js"></script>
+<script src="apk.js"></script>
+<script src="nav.js" data-active="anestesia"></script>
 
 <script>
 'use strict';
@@ -1355,22 +1356,15 @@ function exportPdf(){
 
   const safeName = (p.name || 'paciente').replace(/[^a-z0-9áéíóúñ]+/gi,'_');
   const fileName = 'ficha_anestesica_'+safeName+'_'+fmtDateShort(state.startTime || new Date().toISOString()).split('/').join('-')+'.pdf';
-  if(window.AndroidBridge && window.AndroidBridge.savePdf){
-    const b64 = doc.output('datauristring').split(',')[1];
-    const msg = window.AndroidBridge.savePdf(b64, fileName);
-    vibrate(30);
-    showToast(msg || 'PDF guardado');
-    return;
-  }
-  doc.save(fileName);
+  const msg = Apk.guardarPdf(doc, fileName);
   vibrate(30);
-  showToast('PDF generado');
+  showToast(msg || 'PDF generado');
 }
 
 /* ========================================================================
    INTEGRACIÓN CON LA APP
    ======================================================================== */
-// Precarga especie y peso desde la calculadora de dosis si la ficha está vacía.
+// Precarga especie y peso desde la calculadora (y nombre/raza/edad si se abrió desde una ficha clínica).
 function prefillFromCalculator(){
   if(state.caseStarted) return;
   try{
@@ -1380,6 +1374,13 @@ function prefillFromCalculator(){
     const wEl = document.getElementById('p-weight');
     if(sp && !spEl.value) spEl.value = sp === 'g' ? 'Felino' : 'Canino';
     if(w && !wEl.value){ const n = parseFloat(String(w).replace(',', '.')); if(n > 0) wEl.value = n; }
+    // Datos enviados desde una ficha clínica ("Ficha anestésica" en la consulta).
+    const pac = JSON.parse(localStorage.getItem('uv.patient') || 'null');
+    if(pac){
+      const set = (id, v) => { const el = document.getElementById(id); if(v && !el.value) el.value = v; };
+      set('p-name', pac.nombre); set('p-breed', pac.raza); set('p-age', pac.edad && pac.edad !== '—' ? pac.edad : '');
+      localStorage.removeItem('uv.patient');
+    }
   }catch(e){}
 }
 document.addEventListener('DOMContentLoaded', prefillFromCalculator);

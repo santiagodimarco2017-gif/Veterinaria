@@ -9,9 +9,13 @@ reúne cinco herramientas, con una barra inferior para pasar de una a otra:
   goteo (macro 20 / micro 60). Indica los ml a cargar de cada frasco, el
   diluyente, la duración, los ml/kg/h de fluido y las gotas por minuto.
 - 🧮 **Cálculos**:
-  - *Fluidoterapia*: déficit (% deshidratación) + mantenimiento (AAHA o
-    ml/kg/día) + pérdidas, repartido en las horas elegidas; ml/h, ml/kg/h y
-    gotas/min (macro 20 / micro 60).
+  - *Fluidoterapia* (2024 AAHA Fluid Therapy Guidelines): resucitación con
+    bolos (gato 5–10, perro 15–20 ml/kg en 15 min), rehidratación (peso ×
+    % deshidratación, Tabla 3) en 12–24 h + pérdidas, mantenimiento con las
+    tres fórmulas de la Tabla 9 (y factor pediátrico), suplementación de
+    potasio (Tabla 11), fluidos en anestesia (perro 5, gato 3–5 ml/kg/h,
+    bolo de 5 ml/kg por hipotensión, control a 20 ml/kg) y subcutáneos
+    (20–30 ml/kg). ml/h, ml/kg/h y gotas/min.
   - *Transfusión*: volumen = peso × volemia × (Hto deseado − Hto actual) /
     Hto donante (volemia perro 90, gato 60 ml/kg), con fase de prueba,
     velocidad (máx. 10 ml/kg/h o 4 en cardiópatas), tiempo y goteo.

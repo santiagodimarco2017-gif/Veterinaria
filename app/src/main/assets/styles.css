@@ -136,6 +136,13 @@ input.full { padding: 10px 12px; border: 1px solid var(--line); border-radius: 1
 .seg.tabs { margin-bottom: 4px; }
 .seg.tabs button { font-size: 13.5px; padding: 9px 2px; }
 .chips.wrap { flex-wrap: wrap; overflow: visible; padding-top: 0; margin-bottom: 8px; }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 10px; }
+.grid2 > label { min-width: 0; }
+.grid2 .inrow input { width: 100%; }
 .grid2 .lbl { margin-top: 8px; }
 #n-stage { width: 100%; }
+.hint.src { margin: 4px 2px 8px; font-style: italic; }
+details.ref { margin-top: 10px; font-size: 13px; color: var(--muted); }
+details.ref summary { color: var(--accent); font-weight: 600; cursor: pointer; }
+details.ref p { margin: 6px 0; }
+#f-modo { margin-top: 8px; }

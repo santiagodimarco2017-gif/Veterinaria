@@ -38,7 +38,7 @@ function showAmount(base, dim) {
   return fmt(base * 1000) + ' µg';
 }
 
-// Mantenimiento de fluidos (AAHA 2013): perro 132 × kg^0,75 ml/día; gato 80 × kg^0,75 ml/día.
+// Mantenimiento de fluidos (2024 AAHA Fluid Therapy Guidelines, Tabla 9): perro 132 × kg^0,75 ml/día; gato 80 × kg^0,75 ml/día.
 const mantenimientoMlH = (kg, sp) => ((sp === 'g' ? 80 : 132) * Math.pow(kg, 0.75)) / 24;
 
 // ───────────── Fármacos de infusión disponibles (del vademécum) ─────────────

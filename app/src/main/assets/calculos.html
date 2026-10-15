@@ -28,28 +28,93 @@
 
   <!-- ───────────── FLUIDOTERAPIA ───────────── -->
   <section id="t-fluidos" class="tool">
-    <div class="card">
-      <h4>Déficit (deshidratación)</h4>
-      <div class="chips wrap" id="dh-chips"></div>
-      <div class="inrow"><input id="f-dh" data-k="fDh" inputmode="decimal" placeholder="0"><span class="unit">% de deshidratación</span></div>
-      <div class="hint" id="dh-desc"></div>
-      <label class="lbl">Reponer el déficit en</label>
-      <div class="inrow"><input id="f-h" data-k="fH" inputmode="decimal" placeholder="24"><span class="unit">horas</span></div>
-      <div class="chips" id="h-chips"></div>
+    <div class="seg small" id="f-modo">
+      <button data-v="int">Internación IV</button>
+      <button data-v="anes">Anestesia</button>
+      <button data-v="sc">Subcutánea</button>
     </div>
-    <div class="card">
-      <h4>Mantenimiento</h4>
-      <div class="seg small" id="f-mant">
-        <button data-v="aaha">Fórmula AAHA</button>
-        <button data-v="kg">ml/kg/día</button>
+    <div class="hint src">Según 2024 AAHA Fluid Therapy Guidelines for Dogs and Cats.</div>
+
+    <div id="fm-int">
+      <div class="card">
+        <h4>1. Resucitación (hipovolemia)</h4>
+        <div class="seg small" id="f-hipo">
+          <button data-v="no">Sin hipovolemia</button>
+          <button data-v="si">Hipovolémico</button>
+        </div>
+        <div id="f-bolo-wrap">
+          <label class="lbl">Bolo de cristaloide isotónico tamponado</label>
+          <div class="inrow"><input id="f-bolo" data-k="fBolo" inputmode="decimal"><span class="unit">ml/kg en 15 min</span></div>
+          <div class="hint" id="f-bolo-hint"></div>
+        </div>
+        <details class="ref">
+          <summary>Estadios del shock hipovolémico (Tabla 2)</summary>
+          <p><b>Compensatorio.</b> Perro: FC normal o ↑, TLLC 1–2 s, mucosas normales o rojas, pulso saltón, PA normal o ↑, extremidades a temperatura normal. Gato: rara vez se reconoce (dura segundos a minutos).</p>
+          <p><b>Descompensatorio temprano.</b> Perro: FC ↑, TLLC &gt; 2 s, mucosas pálidas a blancas, pulso débil, PA normal o ↓, extremidades frías. Gato: FC normal o ↓, TLLC &gt; 2 s, mucosas pálidas, pulso débil, PA baja, extremidades frías, hipotermia.</p>
+          <p><b>Descompensatorio tardío.</b> Perro: FC normal o ↓, TLLC &gt; 2 s o ausente, mucosas blancas, pulso ausente, PA baja o no medible, extremidades frías. Gato: FC ↓, TLLC &gt; 2 s o ausente, mucosas blancas, pulso ausente, PA baja o no medible, hipotermia.</p>
+          <p>En gatos el shock suele presentarse con la tríada bradicardia, hipotermia e hipotensión, y son más susceptibles a la sobrecarga con las mismas estrategias de resucitación que en perros (Tabla 6).</p>
+        </details>
       </div>
-      <div id="f-mant-kg-wrap"><div class="inrow"><input id="f-mantkg" data-k="fMantKg" inputmode="decimal" placeholder="50"><span class="unit">ml/kg/día</span></div></div>
-      <div class="hint" id="f-mant-hint"></div>
+
+      <div class="card">
+        <h4>2. Rehidratación</h4>
+        <div class="chips wrap" id="dh-chips"></div>
+        <div class="inrow"><input id="f-dh" data-k="fDh" inputmode="decimal" placeholder="0"><span class="unit">% de deshidratación</span></div>
+        <div class="hint" id="dh-desc"></div>
+        <label class="lbl">Reponer el déficit en</label>
+        <div class="inrow"><input id="f-h" data-k="fH" inputmode="decimal" placeholder="24"><span class="unit">horas</span></div>
+        <div class="chips" id="h-chips"></div>
+        <label class="lbl">Pérdidas actuales (vómitos, diarrea, poliuria…)</label>
+        <div class="inrow"><input id="f-loss" data-k="fLoss" inputmode="decimal" placeholder="0"><span class="unit">ml/día estimados</span></div>
+      </div>
+
+      <div class="card">
+        <h4>3. Mantenimiento</h4>
+        <div class="seg small" id="f-mant">
+          <button data-v="kg">ml/kg/día</button>
+          <button data-v="aaha">× peso^0,75</button>
+          <button data-v="lin">30 × peso + 70</button>
+        </div>
+        <div class="seg small" id="f-ped">
+          <button data-v="no">Adulto</button>
+          <button data-v="si">Pediátrico</button>
+        </div>
+        <div class="hint" id="f-mant-hint"></div>
+      </div>
+
+      <div class="card">
+        <h4>Suplementación de potasio (opcional)</h4>
+        <label class="lbl">Potasio sérico</label>
+        <div class="inrow"><input data-k="fK" inputmode="decimal" placeholder="Ej: 2,8"><span class="unit">mEq/L</span></div>
+        <div class="grid2">
+          <label><span class="lbl">Volumen de la bolsa</span><div class="inrow"><input data-k="fBag" inputmode="decimal" placeholder="500"><span class="unit">ml</span></div></label>
+          <label><span class="lbl">KCl del frasco</span><div class="inrow"><input data-k="fKcl" inputmode="decimal" placeholder="2"><span class="unit">mEq/ml</span></div></label>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <h4>Pérdidas actuales (vómitos, diarrea, poliuria…)</h4>
-      <div class="inrow"><input id="f-loss" data-k="fLoss" inputmode="decimal" placeholder="0"><span class="unit">ml/día estimados</span></div>
+
+    <div id="fm-anes">
+      <div class="card">
+        <h4>Fluidos durante la anestesia</h4>
+        <div class="hint">Cristaloide isotónico balanceado. Si el paciente está deshidratado, idealmente corregir el 80% del déficit en las 24 h previas.</div>
+        <label class="lbl">Deshidratación previa (opcional)</label>
+        <div class="inrow"><input data-k="fAnDh" inputmode="decimal" placeholder="0"><span class="unit">%</span></div>
+      </div>
     </div>
+
+    <div id="fm-sc">
+      <div class="card">
+        <h4>Fluidos subcutáneos</h4>
+        <label class="lbl">Dosis</label>
+        <div class="inrow"><input data-k="fSc" inputmode="decimal" placeholder="20"><span class="unit">ml/kg (20–30)</span></div>
+        <label class="lbl">Frecuencia</label>
+        <div class="seg small" id="f-scf">
+          <button data-v="1">1 vez por día</button>
+          <button data-v="2">2 veces por día</button>
+        </div>
+      </div>
+    </div>
+
     <div id="r-fluidos"></div>
   </section>
 

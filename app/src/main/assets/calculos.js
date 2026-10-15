@@ -33,7 +33,7 @@ const state = Object.assign({
   fModo: 'int', fHipo: 'no', fBolo: '', fDh: '', fH: '24', fMant: 'aaha', fPed: 'no', fLoss: '',
   fK: '', fBag: '', fKcl: '', fAnDh: '', fSc: '', fScF: '1',
   tProd: 'se', tHr: '', tHd: '', tHdon: '', tBv: '', tTmax: '4', tRisk: 'no', tSet: 'bomba',
-  nW: '', nStage: '', nF: '', nProt: '', nFat: '', nFib: '', nHum: '', nAsh: '', nMeals: '2', nKcalKg: '',
+  nW: '', nStage: '', nF: '', nCrias: '', nSem: '1', nAtw: 'mod', nProt: '', nFat: '', nFib: '', nHum: '', nAsh: '', nMeals: '2', nKcalKg: '', nLata: '',
 }, store.get('uv.calc', {}));
 state.sp = store.get('uv.sp', 'p');
 state.weight = store.get('uv.weight', '');
@@ -256,90 +256,172 @@ function calcTransfusion() {
   return box(warn, rows, `${state.sp === 'g' ? '🐱 Gato' : '🐶 Perro'} · ${fmt(w, 2)} kg · volemia ${fmt(bv)} ml/kg`);
 }
 
-// ───────────── Nutrición ─────────────
+// ───────────── Nutrición (apuntes de la Cátedra de Nutrición Animal) ─────────────
+// RER = 70 × PC^0,75; RED = RER × factor de corrección (FC).
+// [clave, etiqueta, FC mínimo, FC máximo, nota]
 const ETAPAS = {
   p: [
-    ['castrado', 'Adulto castrado', 1.6], ['entero', 'Adulto entero', 1.8], ['inactivo', 'Inactivo / tendencia a obesidad', 1.4],
-    ['bajar', 'Pérdida de peso (usar peso ideal)', 1.0], ['subir', 'Ganancia de peso (usar peso ideal)', 1.4],
-    ['crit', 'Hospitalizado / crítico', 1.0], ['cach4', 'Cachorro < 4 meses', 3.0], ['cach12', 'Cachorro 4–12 meses', 2.0],
-    ['gest', 'Gestación (últimos 21 días)', 3.0], ['lact', 'Lactancia', 4.0],
-    ['trab1', 'Trabajo liviano', 2.0], ['trab2', 'Trabajo moderado', 3.0], ['trab3', 'Trabajo intenso', 5.0],
+    ['castrado', 'Adulto castrado', 1.6, 1.6],
+    ['entero', 'Adulto intacto', 1.8, 1.8],
+    ['inactivo', 'Inactivo / obeso propenso', 1.2, 1.4],
+    ['bajar', 'Pérdida de peso', 1.0, 1.0, 'Usar el peso ideal.'],
+    ['subir', 'Aumento de peso (en peso ideal)', 1.2, 1.8, 'Usar el peso ideal.'],
+    ['crit', 'Cuidado crítico', 1.0, 1.0],
+    ['cach4', 'Crecimiento: destete a 4 meses', 3.0, 3.0, 'Desde el destete hasta los 4 meses.'],
+    ['cach12', 'Crecimiento: 4 meses a tamaño adulto', 2.0, 2.0, 'Desde los 4 meses hasta alcanzar el tamaño adulto.'],
+    ['gest42', 'Gestación: primeros 42 días', 1.8, 1.8, 'Alimentar como un adulto intacto.'],
+    ['gest21', 'Gestación: últimos 21 días', 3.0, 3.0, 'Puede ser necesario aumentar para mantener la condición corporal, sobre todo en razas grandes.'],
+    ['lact', 'Lactancia', 4.0, 8.0, 'Según el número de cachorros, o alimentación a libre elección.'],
+    ['trab1', 'Trabajo ligero', 1.6, 2.0],
+    ['trab2', 'Trabajo moderado', 2.0, 5.0],
+    ['trab3', 'Trabajo pesado', 5.0, 11.0],
   ],
   g: [
-    ['castrado', 'Adulto castrado', 1.2], ['entero', 'Adulto entero', 1.4], ['inactivo', 'Inactivo / tendencia a obesidad', 1.0],
-    ['bajar', 'Pérdida de peso (usar peso ideal)', 0.8], ['subir', 'Ganancia de peso (usar peso ideal)', 1.2],
-    ['crit', 'Hospitalizado / crítico', 1.0], ['gatito', 'Gatito en crecimiento', 2.5],
-    ['gest', 'Gestación', 1.6], ['lact', 'Lactancia', 3.0],
+    ['castrado', 'Adulto castrado', 1.2, 1.4],
+    ['entero', 'Adulto intacto', 1.4, 1.6],
+    ['inactivo', 'Inactivo / obeso propenso', 1.0, 1.0],
+    ['bajar', 'Pérdida de peso', 0.8, 0.8, 'Usar el peso ideal.'],
+    ['subir', 'Aumento de peso (en peso ideal)', 1.2, 1.8, 'Usar el peso ideal.'],
+    ['mayor', 'Adulto mayor (7–11 años)', 1.1, 1.4],
+    ['anciano', 'Adulto muy anciano (> 11 años)', 1.1, 1.6],
+    ['crit', 'Cuidado crítico', 1.0, 1.0],
+    ['gatito', 'Crecimiento (gatito)', 2.5, 2.5, 'Se recomienda alimentación a libre elección.'],
+    ['gest', 'Gestación (del servicio al parto)', 1.6, 2.0, 'Empezar con 1,6 × RER al servicio y aumentar gradualmente hasta 2 × RER al parto. Se recomienda libre elección.'],
+    ['lact', 'Lactancia', 2.0, 6.0, 'Según el número de gatitos y la semana, o alimentación a libre elección.'],
   ],
 };
+// Perra lactante: FC según número de cachorros.
+function fcPerraLactante(n) {
+  if (n <= 1) return 3.0;
+  if (n === 2) return 3.5;
+  if (n <= 4) return 4.0;
+  if (n <= 6) return 5.0;
+  if (n <= 8) return 5.5;
+  return 6.0; // 9 o más: ≥ 6 × RER
+}
+// Gata lactante: RER + % por gatito según la semana de lactancia.
+const GATA_SEMANA = { 1: 0.30, 3: 0.45, 4: 0.55, 5: 0.65, 6: 0.90 };
+
+function etapaActual() {
+  const list = ETAPAS[state.sp];
+  return list.find((x) => x[0] === state.nStage) || list[0];
+}
+
+// Rango de FC para la etapa (considerando crías y semana en lactancia).
+function factorRango() {
+  const e = etapaActual();
+  if (num(state.nF) > 0) return { min: num(state.nF), max: num(state.nF), manual: true };
+  const crias = Math.round(num(state.nCrias));
+  if (e[0] === 'lact' && crias > 0) {
+    if (state.sp === 'p') {
+      const f = fcPerraLactante(crias);
+      return { min: f, max: f, txt: `${crias} cachorro${crias > 1 ? 's' : ''}${crias >= 9 ? ' (≥ 6 × RER)' : ''}` };
+    }
+    const pct = GATA_SEMANA[state.nSem] || GATA_SEMANA[1];
+    const f = 1 + pct * crias;
+    return { min: f, max: f, txt: `RER + ${fmt(pct * 100, 0)}% × ${crias} gatito${crias > 1 ? 's' : ''}` };
+  }
+  return { min: e[2], max: e[3] };
+}
 
 function renderStages() {
   const list = ETAPAS[state.sp];
   if (!list.some((x) => x[0] === state.nStage)) { state.nStage = list[0][0]; state.nF = ''; }
-  $('#n-stage').innerHTML = list.map(([k, l, f]) => `<option value="${k}" ${k === state.nStage ? 'selected' : ''}>${esc(l)} · ×${fmt(f, 1)}</option>`).join('');
-  const f = list.find((x) => x[0] === state.nStage)[2];
-  $('#n-f').placeholder = String(f).replace('.', ',');
+  $('#n-stage').innerHTML = list.map(([k, l, a, b]) =>
+    `<option value="${k}" ${k === state.nStage ? 'selected' : ''}>${esc(l)} · ${rango(a, b, 1)} × RER</option>`).join('');
+  const lact = state.nStage === 'lact';
+  $('#n-crias-wrap').hidden = !lact;
+  $('#n-sem-wrap').hidden = !(lact && state.sp === 'g');
+  const fr = factorRango();
+  $('#n-f').placeholder = rango(fr.min, fr.max, 2);
+  const e = etapaActual();
+  $('#n-f-hint').textContent = [fr.txt, e[4], 'Vacío = factor de la tabla. Son puntos de partida: ajustar según la condición corporal.'].filter(Boolean).join(' ');
+  $('#n-atw-hint').textContent = state.nAtw === 'atw'
+    ? 'Atwater sin modificar (PB 4, EE 9, HdC 4 kcal/g): para alimentos de digestibilidad mayor.'
+    : 'Atwater modificado (PB 3,5, EE 8,5, HdC 3,5 kcal/g; AAFCO): para alimentos balanceados comerciales.';
 }
 
-// Energía metabolizable (kcal/100 g tal cual) por Atwater y Atwater modificado.
+// Energía metabolizable del alimento (kcal EM/kg tal cual).
 function energia() {
   const prot = num(state.nProt); const fat = num(state.nFat);
-  if (!(prot >= 0 && fat >= 0) || !isFinite(prot) || !isFinite(fat)) return null;
+  if (!(prot >= 0) || !(fat >= 0)) return null;
   const fib = num(state.nFib) || 0;
   const hum = num(state.nHum) || 0;
   let ash = num(state.nAsh); let ashEst = false;
-  if (!isFinite(ash)) { ash = hum > 50 ? 2.5 : 8; ashEst = true; }
-  const eln = 100 - (prot + fat + fib + hum + ash); // extracto libre de nitrógeno (carbohidratos)
-  if (eln < 0) return { error: 'Los porcentajes suman más de 100%: revisá los valores.' };
+  if (!(ash >= 0)) { ash = hum > 50 ? 2.5 : 8; ashEst = true; }
+  const hdc = 100 - (prot + fat + fib + hum + ash); // hidratos de carbono digestibles (ELN)
+  if (hdc < 0) return { error: 'Los porcentajes suman más de 100%: revisá el análisis.' };
   return {
-    eln, ash, ashEst,
-    atwater: 4 * prot + 9 * fat + 4 * eln,
-    modificado: 3.5 * prot + 8.5 * fat + 3.5 * eln,
+    prot, fat, fib, hum, ash, ashEst, hdc,
+    mod: (3.5 * prot + 8.5 * fat + 3.5 * hdc) * 10,
+    atw: (4 * prot + 9 * fat + 4 * hdc) * 10,
   };
 }
 
 function calcNutricion() {
+  renderStages();
   const w = num(state.nW) > 0 ? num(state.nW) : W();
   if (!(w > 0)) return muted('Ingresá el peso del paciente arriba.');
-  const list = ETAPAS[state.sp];
-  const etapa = list.find((x) => x[0] === state.nStage);
-  const factor = num(state.nF) > 0 ? num(state.nF) : etapa[2];
-  const rer = 70 * Math.pow(w, 0.75);
-  const mer = rer * factor;
+  const e = etapaActual();
+  const fr = factorRango();
+  const pm = Math.pow(w, 0.75);
+  const rer = 70 * pm;
+  const red1 = rer * fr.min; const red2 = rer * fr.max;
   const meals = Math.max(1, Math.round(num(state.nMeals) || 1));
+  const lata = num(state.nLata);
   const warn = [];
   const rows = [
-    kv('RER (70 × peso^0,75)', `${fmt(rer)} kcal/día`),
-    kv(`MER (RER × ${fmt(factor, 2)})`, `${fmt(mer)} kcal/día`, 'big'),
+    kv('Peso metabólico (PC^0,75)', `${fmt(pm, 2)} kg`, 'sub'),
+    kv('RER = 70 × PC^0,75', `${fmt(rer, 1)} kcal EM/día`),
+    kv(`RED = RER × ${rango(fr.min, fr.max, 2)}`, `${rango(red1, red2, 0, 'kcal EM/día')}`, 'big'),
   ];
-  if (state.nStage === 'crit') rows.push('<div class="hint">Paciente crítico: empezar con 1/3 del RER el día 1 y aumentar a lo largo de 3 días hasta el RER.</div>');
+  if (state.sp === 'p' && ['castrado', 'entero', 'inactivo'].includes(e[0])) {
+    rows.push(kv('Referencia NRC 2006: 95 (inactivo) a 130 (activo) × PC^0,75', rango(95 * pm, 130 * pm, 0, 'kcal/día'), 'sub'));
+  }
+  if (e[0] === 'crit') rows.push('<div class="hint">Paciente crítico: reintroducir el alimento de forma progresiva.</div>');
 
-  const e = energia();
-  const declarada = num(state.nKcalKg) > 0 ? num(state.nKcalKg) / 10 : NaN; // kcal/100 g
-  if (e && e.error) warn.push(e.error);
-  const racion = (kcal100) => mer / kcal100 * 100;
+  const racion = (em) => [red1 / em * 1000, red2 / em * 1000];
+  const filasRacion = (em, titulo, cls) => {
+    const [g1, g2] = racion(em);
+    const out = [kv(titulo, rango(g1, g2, 0, 'g/día'), cls)];
+    if (meals > 1) out.push(kv(`En ${meals} comidas`, rango(g1 / meals, g2 / meals, 0, 'g c/u'), 'sub'));
+    if (lata > 0) out.push(kv(`En unidades de ${fmt(lata)} g`, rango(g1 / lata, g2 / lata, 1, 'por día'), 'sub'));
+    return out;
+  };
 
-  if (e && !e.error) {
-    rows.push('<div class="sep">Ración diaria según el análisis garantizado</div>');
-    rows.push(kv('ELN (carbohidratos) estimado', `${fmt(e.eln, 1)}%`, 'sub'));
-    if (e.ashEst) rows.push(kv('Cenizas (estimadas)', `${fmt(e.ash, 1)}%`, 'sub'));
-    rows.push(kv('Atwater modificado (3,5 / 8,5 / 3,5)', `${fmt(e.modificado * 10)} kcal/kg`));
-    rows.push(kv('Ración (Atwater modificado)', `${fmt(racion(e.modificado))} g/día`, 'big hl'));
-    if (meals > 1) rows.push(kv(`En ${meals} comidas`, `${fmt(racion(e.modificado) / meals)} g c/u`, 'sub'));
-    rows.push(kv('Atwater (4 / 9 / 4)', `${fmt(e.atwater * 10)} kcal/kg`));
-    rows.push(kv('Ración (Atwater)', `${fmt(racion(e.atwater))} g/día`, 'big'));
-    rows.push('<div class="hint">Atwater modificado es el recomendado para alimentos comerciales (digestibilidad menor que la de alimentos para humanos); Atwater clásico sobreestima la energía y da raciones más chicas. Para dietas caseras muy digestibles, Atwater se acerca más.</div>');
+  const en = energia();
+  const declarada = num(state.nKcalKg);
+  if (en && en.error) warn.push(en.error);
+  if (en && !en.error) {
+    if (en.ashEst) warn.push(`Cenizas no cargadas: se estimaron en ${fmt(en.ash, 1)}% para poder calcular los hidratos de carbono. Cargá el valor de la etiqueta si figura.`);
+    const usar = state.nAtw === 'atw' ? en.atw : en.mod;
+    const otra = state.nAtw === 'atw' ? en.mod : en.atw;
+    rows.push('<div class="sep">Ración según el análisis garantizado</div>');
+    rows.push(kv('HdC digestibles = 100 − (PB + EE + FB + Hum + Cen)', `${fmt(en.hdc, 1)}%`, 'sub'));
+    rows.push(kv(state.nAtw === 'atw' ? 'EM (Atwater)' : 'EM (Atwater modificado)', `${fmt(usar, 0)} kcal EM/kg`));
+    rows.push(...filasRacion(usar, 'Ración', 'big hl'));
+    rows.push(kv(state.nAtw === 'atw' ? 'Con Atwater modificado' : 'Con Atwater (sin modificar)',
+      `${fmt(otra, 0)} kcal/kg → ${rango(...racion(otra), 0, 'g/día')}`, 'sub'));
+    // Base materia seca (etiquetas: convertir para comparar alimentos con distinta humedad).
+    const ms = 100 - en.hum;
+    if (ms > 0) {
+      const bs = (x) => fmt(x / ms * 100, 1);
+      rows.push('<div class="sep">Base materia seca</div>');
+      rows.push(kv('Materia seca', `${fmt(ms, 1)}%`));
+      rows.push(kv('PB · EE · FB · Cen · HdC', `${bs(en.prot)} · ${bs(en.fat)} · ${bs(en.fib)} · ${bs(en.ash)} · ${bs(en.hdc)} %`, 'sub'));
+      rows.push(kv('EM en base seca', `${fmt(usar / ms * 100, 0)} kcal/kg MS`, 'sub'));
+      rows.push('<div class="hint">El análisis de la etiqueta está "tal cual" y expresa mínimos (PB, EE) y máximos (FB, humedad): para comparar alimentos con distinta humedad (secos vs. húmedos) usar la base seca.</div>');
+    }
   }
-  if (isFinite(declarada)) {
-    rows.push('<div class="sep">Según la energía declarada</div>');
-    rows.push(kv('Ración', `${fmt(racion(declarada))} g/día`, 'big hl'));
-    if (meals > 1) rows.push(kv(`En ${meals} comidas`, `${fmt(racion(declarada) / meals)} g c/u`, 'sub'));
+  if (declarada > 0) {
+    rows.push('<div class="sep">Según el contenido calórico declarado</div>');
+    rows.push(...filasRacion(declarada, `Ración (${fmt(declarada)} kcal EM/kg)`, 'big hl'));
+    rows.push('<div class="hint">Si la etiqueta dice "calculado", el valor sale de Atwater modificado; si no, de pruebas de alimentación (más preciso).</div>');
   }
-  if (!e && !isFinite(declarada)) rows.push('<div class="kv sub muted"><span>Cargá el análisis garantizado del alimento para calcular los gramos por día.</span></div>');
-  if (state.nStage === 'bajar' || state.nStage === 'subir') {
-    rows.push('<div class="hint">Recalcular cada 2–4 semanas según la evolución del peso (objetivo de pérdida: 1–2% del peso por semana).</div>');
-  }
-  return box(warn, rows, `${state.sp === 'g' ? '🐱 Gato' : '🐶 Perro'} · ${fmt(w, 2)} kg${num(state.nW) > 0 ? ' (peso ideal)' : ''} · ${esc(etapa[1])}`);
+  if (!en && !(declarada > 0)) rows.push('<div class="kv sub muted"><span>Cargá el análisis garantizado o el contenido calórico de la etiqueta para calcular la ración.</span></div>');
+  if (state.sp === 'p') rows.push('<div class="hint">En un mismo ambiente, un perro requiere ~30% más calorías en invierno que en verano. Las indicaciones de alimentación del envase son solo pautas generales.</div>');
+  if (e[0] === 'bajar' || e[0] === 'subir') rows.push('<div class="hint">Recalcular periódicamente según la evolución del peso y la condición corporal.</div>');
+  return box(warn, rows, `${state.sp === 'g' ? '🐱 Gato' : '🐶 Perro'} · ${fmt(w, 2)} kg${num(state.nW) > 0 ? ' (peso ideal)' : ''} · ${esc(e[1])}`);
 }
 
 // ───────────── Render y eventos ─────────────
@@ -347,7 +429,7 @@ function render() {
   document.querySelectorAll('#species button').forEach((b) => b.classList.toggle('on', b.dataset.sp === state.sp));
   document.querySelectorAll('#tool button').forEach((b) => b.classList.toggle('on', b.dataset.t === state.tool));
   document.querySelectorAll('.tool').forEach((s) => { s.hidden = s.id !== 't-' + state.tool; });
-  const segs = { 'f-modo': 'fModo', 'f-hipo': 'fHipo', 'f-mant': 'fMant', 'f-ped': 'fPed', 'f-scf': 'fScF', 't-prod': 'tProd', 't-risk': 'tRisk', 't-set': 'tSet' };
+  const segs = { 'f-modo': 'fModo', 'f-hipo': 'fHipo', 'f-mant': 'fMant', 'f-ped': 'fPed', 'f-scf': 'fScF', 'n-sem': 'nSem', 'n-atw': 'nAtw', 't-prod': 'tProd', 't-risk': 'tRisk', 't-set': 'tSet' };
   Object.entries(segs).forEach(([id, k]) => document.querySelectorAll(`#${id} button`).forEach((b) => b.classList.toggle('on', b.dataset.v === state[k])));
   renderStages();
   compute();
@@ -372,7 +454,7 @@ $('#tool').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   state.tool = b.dataset.t; save(); render(); window.scrollTo(0, 0);
 });
-[['f-modo', 'fModo'], ['f-hipo', 'fHipo'], ['f-mant', 'fMant'], ['f-ped', 'fPed'], ['f-scf', 'fScF'], ['t-prod', 'tProd'], ['t-risk', 'tRisk'], ['t-set', 'tSet']].forEach(([id, k]) => {
+[['f-modo', 'fModo'], ['f-hipo', 'fHipo'], ['f-mant', 'fMant'], ['f-ped', 'fPed'], ['f-scf', 'fScF'], ['n-sem', 'nSem'], ['n-atw', 'nAtw'], ['t-prod', 'tProd'], ['t-risk', 'tRisk'], ['t-set', 'tSet']].forEach(([id, k]) => {
   $('#' + id).addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
     state[k] = b.dataset.v; save(); render();

@@ -19,9 +19,13 @@ reúne cinco herramientas, con una barra inferior para pasar de una a otra:
   - *Transfusión*: volumen = peso × volemia × (Hto deseado − Hto actual) /
     Hto donante (volemia perro 90, gato 60 ml/kg), con fase de prueba,
     velocidad (máx. 10 ml/kg/h o 4 en cardiópatas), tiempo y goteo.
-  - *Nutrición*: RER = 70 × peso^0,75, MER = RER × factor por etapa, y
-    ración en g/día a partir del análisis garantizado con Atwater (4/9/4) y
-    Atwater modificado (3,5/8,5/3,5), o de las kcal/kg declaradas.
+  - *Nutrición* (apuntes de la Cátedra de Nutrición Animal 2024): RER =
+    70 × PC^0,75, RED = RER × factor de corrección según especie y estado
+    fisiológico (incluye lactancia por número de crías y, en gatas, por
+    semana), y ración en g/día desde el análisis garantizado (HdC = 100 −
+    PB − EE − FB − humedad − cenizas; Atwater modificado 3,5/8,5/3,5 o
+    Atwater 4/9/4) o desde el contenido calórico declarado; conversión a
+    base de materia seca y ración en latas/sobres.
 - 📋 **Fichas**: historia clínica (pacientes, tutores, consultas, examen,
   diagnóstico, tratamiento, recordatorios, PDF y resumen por WhatsApp).
   Basada en la app [Fichas](https://github.com/santiagodimarco2017-gif/Fichas).

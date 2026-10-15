@@ -158,29 +158,48 @@
 
   <!-- ───────────── NUTRICIÓN ───────────── -->
   <section id="t-nutricion" class="tool">
+    <div class="hint src">Según los apuntes de la Cátedra de Nutrición Animal (Requerimientos energéticos y Etiquetas de alimentos, 2024), basados en Hand y col., Nutrición clínica en pequeños animales, 5ª ed.</div>
     <div class="card">
-      <h4>Requerimiento energético</h4>
+      <h4>Requerimiento energético diario (RED)</h4>
       <label class="lbl">Peso para el cálculo</label>
       <div class="inrow"><input id="n-w" data-k="nW" inputmode="decimal" placeholder="Peso actual"><span class="unit">kg</span></div>
-      <div class="hint">Vacío = peso actual. Para bajar o subir de peso, poné el peso ideal.</div>
-      <label class="lbl">Condición / etapa</label>
+      <div class="hint">Vacío = peso actual. Para aumento o pérdida de peso, poné el peso ideal.</div>
+      <label class="lbl">Estado fisiológico</label>
       <select id="n-stage" class="full"></select>
-      <label class="lbl">Factor (MER = RER × factor)</label>
+      <div id="n-crias-wrap">
+        <label class="lbl">Número de crías lactantes</label>
+        <div class="inrow"><input data-k="nCrias" inputmode="decimal" placeholder="Ej: 4"><span class="unit">crías</span></div>
+      </div>
+      <div id="n-sem-wrap">
+        <label class="lbl">Semana de lactancia</label>
+        <div class="seg small" id="n-sem">
+          <button data-v="1">1–2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button>
+        </div>
+      </div>
+      <label class="lbl">Factor de corrección (RED = RER × FC)</label>
       <div class="inrow"><input id="n-f" data-k="nF" inputmode="decimal"><span class="unit">× RER</span></div>
+      <div class="hint" id="n-f-hint"></div>
     </div>
     <div class="card">
-      <h4>Alimento (análisis garantizado del envase)</h4>
+      <h4>Alimento: análisis garantizado (tal cual)</h4>
       <div class="grid2">
-        <label><span class="lbl">Proteína</span><div class="inrow"><input data-k="nProt" inputmode="decimal" placeholder="25"><span class="unit">%</span></div></label>
-        <label><span class="lbl">Grasa</span><div class="inrow"><input data-k="nFat" inputmode="decimal" placeholder="12"><span class="unit">%</span></div></label>
-        <label><span class="lbl">Fibra</span><div class="inrow"><input data-k="nFib" inputmode="decimal" placeholder="3"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Proteína bruta</span><div class="inrow"><input data-k="nProt" inputmode="decimal" placeholder="22"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Extracto etéreo</span><div class="inrow"><input data-k="nFat" inputmode="decimal" placeholder="9"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Fibra bruta</span><div class="inrow"><input data-k="nFib" inputmode="decimal" placeholder="3"><span class="unit">%</span></div></label>
         <label><span class="lbl">Humedad</span><div class="inrow"><input data-k="nHum" inputmode="decimal" placeholder="10"><span class="unit">%</span></div></label>
-        <label><span class="lbl">Cenizas</span><div class="inrow"><input data-k="nAsh" inputmode="decimal" placeholder="8"><span class="unit">%</span></div></label>
+        <label><span class="lbl">Cenizas</span><div class="inrow"><input data-k="nAsh" inputmode="decimal" placeholder="5"><span class="unit">%</span></div></label>
         <label><span class="lbl">Comidas por día</span><div class="inrow"><input data-k="nMeals" inputmode="decimal" placeholder="2"></div></label>
       </div>
-      <div class="hint">Si el envase no declara cenizas se estima 8% (seco) o 2,5% (húmedo, humedad &gt; 50%).</div>
-      <label class="lbl">Energía declarada en el envase (opcional)</label>
-      <div class="inrow"><input data-k="nKcalKg" inputmode="decimal" placeholder="Ej: 3600"><span class="unit">kcal/kg</span></div>
+      <label class="lbl">Fórmula</label>
+      <div class="seg small" id="n-atw">
+        <button data-v="mod">Atwater modificado</button>
+        <button data-v="atw">Atwater</button>
+      </div>
+      <div class="hint" id="n-atw-hint"></div>
+      <label class="lbl">Contenido calórico declarado en la etiqueta (opcional)</label>
+      <div class="inrow"><input data-k="nKcalKg" inputmode="decimal" placeholder="Ej: 3600"><span class="unit">kcal EM/kg</span></div>
+      <label class="lbl">Peso de la lata / sobre / taza (opcional)</label>
+      <div class="inrow"><input data-k="nLata" inputmode="decimal" placeholder="Ej: 85"><span class="unit">g por unidad</span></div>
     </div>
     <div id="r-nutricion"></div>
   </section>

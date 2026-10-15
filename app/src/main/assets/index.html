@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6e5c">
+<title>Dosis Vet FCV</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">Dosis Vet <span>· Unidad Veterinaria FCV</span></div>
+  <div class="patient">
+    <div class="seg" id="species">
+      <button data-sp="p">🐶 Perro</button>
+      <button data-sp="g">🐱 Gato</button>
+    </div>
+    <label class="weight"><input id="weight" inputmode="decimal" autocomplete="off" placeholder="Peso"><span>kg</span></label>
+  </div>
+</header>
+
+<main>
+  <section id="list-view">
+    <input id="search" type="search" placeholder="🔍 Buscar fármaco…" autocomplete="off">
+    <div id="chips" class="chips"></div>
+    <div id="drug-list"></div>
+    <p class="disclaimer">Herramienta de apoyo al cálculo. Las dosis provienen del material de la Unidad y deben verificarse con criterio clínico y bibliografía actualizada antes de administrar.</p>
+  </section>
+
+  <section id="detail-view" hidden>
+    <button id="back" class="back">‹ Volver</button>
+    <h2 id="d-name"></h2>
+    <div id="d-contra"></div>
+    <div id="d-body">
+      <div id="d-presets-wrap"><label class="lbl">Indicación</label><div id="d-presets"></div></div>
+      <div id="d-info" class="card info"></div>
+      <div id="d-dose" class="card"></div>
+      <div class="card"><h4>Presentación del fármaco</h4><div id="d-pres"></div></div>
+      <div id="d-result"></div>
+      <div id="d-cri"></div>
+    </div>
+  </section>
+</main>
+
+<script src="drugs.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
